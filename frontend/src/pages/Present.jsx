@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "./Layout.jsx";
 
 export default function Present() {
   const navigate = useNavigate();
@@ -180,6 +181,7 @@ export default function Present() {
   }, []);
 
   return (
+    // <Layout>
     <div ref={containerRef} style={{ position: "relative", minHeight: "100vh" }}>
       
       {/* FLOATING BUTTON (ALWAYS SHOWN EVEN IN FULLSCREEN) */}
@@ -203,37 +205,8 @@ export default function Present() {
 
       {!isFullscreenMode && (
         <>
-          <img src="/images/logo.png" width={100} style={{
-            position: "fixed", top: "20px", left: "20px", zIndex: 5
-          }}/>
-
-          <img src="/images/log.png" width={1100} style={{
-            position: "fixed", bottom: "-75px", left: "14%"
-          }}/>
-
-          <img src="/images/pinkWeed.png" width={500} style={{
-            position: "fixed", bottom: "-20px", left: "-125px"
-          }}/>
-
-          <img src="/images/brownWeed.png" width={500} style={{
-            position: "fixed", bottom: "-80px", right: "-175px", zIndex: 1
-          }}/>
-
-          <img src="/images/featherHome.png" width={100}
-               style={{ position: "fixed", left: "33%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/")}/>
-
-          <img src="/images/nestProfile.png" width={100}
-               style={{ position: "fixed", left: "43%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/profile")}/>
-
-          <img src="/images/pawHistory.png" width={100}
-               style={{ position: "fixed", left: "53%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/history")}/>
-
-          <img src="/images/binoExport.png" width={100}
-               style={{ position: "fixed", left: "63%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/")}/>
+        <Layout>
+        </Layout>
         </>
       )}
 
@@ -248,11 +221,15 @@ export default function Present() {
           height: isFullscreenMode ? "100vh" : "auto",
           objectFit: isFullscreenMode ? "cover" : "contain",
           borderRadius: isFullscreenMode ? "0px" : "20px",
-          transform: "scaleX(-1)",
+          transform: isFullscreenMode ? "scaleX(-1)" : "translate(-50%, -50%) scaleX(-1)",
           background: "black",
-          marginTop: isFullscreenMode ? "0px" : "80px",
+          position: isFullscreenMode ? "relative" : "absolute",
+          top: isFullscreenMode ? "0" : "42%",
+          left: isFullscreenMode ? "0" : "50%",
+          display: "block",
         }}
       />
+
 
       {/* DOWNLOAD LINKS (always clickable) */}
       {(fullAudioURL || fullVideoURL) && (
@@ -302,6 +279,7 @@ export default function Present() {
 
 
     </div>
+    // </Layout>
   );
 }
 
