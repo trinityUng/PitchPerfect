@@ -175,6 +175,17 @@ export default function Present() {
     });
   };
 
+  const triggerVideoDownload = () => {
+  if (!fullVideoURL) return;
+
+  const a = document.createElement("a");
+  a.href = fullVideoURL;
+  a.download = "full-video.webm";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
   useEffect(() => {
     startCamera();
   }, []);
@@ -231,9 +242,22 @@ export default function Present() {
                style={{ position: "fixed", left: "53%", bottom: "10px", cursor: "pointer" }}
                onClick={() => navigate("/history")}/>
 
-          <img src="/images/binoExport.png" width={100}
-               style={{ position: "fixed", left: "63%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/")}/>
+          {/* BINOCULAR ICON — turns yellow when video is ready */}
+          <img
+            src={fullVideoURL ? "/images/binoYellow.png" : "/images/binoExport.png"}
+            width={100}
+            style={{
+              position: "fixed",
+              left: "63%",
+              bottom: "10px",
+              cursor: fullVideoURL ? "pointer" : "default",
+              opacity: fullVideoURL ? 1 : 0.6
+            }}
+            onClick={() => {
+              if (fullVideoURL) triggerVideoDownload();
+            }}
+          />
+
         </>
       )}
 
@@ -254,7 +278,7 @@ export default function Present() {
         }}
       />
 
-      {/* DOWNLOAD LINKS (always clickable) */}
+      {/* DOWNLOAD BOX (Only audio — commented out for now) */}
       {(fullAudioURL || fullVideoURL) && (
         <div
           style={{
@@ -262,14 +286,16 @@ export default function Present() {
             bottom: isFullscreenMode ? "20px" : "120px",
             left: "50%",
             transform: "translateX(-50%)",
-            zIndex: 999999,    // <-- KEY FIX
+            zIndex: 999999,
             background: "rgba(255,255,255,0.8)",
             padding: "10px 20px",
             borderRadius: "12px",
             textAlign: "center",
           }}
         >
-          {fullAudioURL && (
+
+          {/* COMMENTED OUT PER REQUEST */}
+          {false && fullAudioURL && (
             <a
               href={fullAudioURL}
               download="full-audio.webm"
@@ -277,26 +303,13 @@ export default function Present() {
                 marginRight: "20px",
                 cursor: "pointer",
                 fontWeight: "600",
-                color: "black",
+                color: "black"
               }}
             >
               ⬇ Download Full Audio
             </a>
           )}
 
-          {fullVideoURL && (
-            <a
-              href={fullVideoURL}
-              download="full-video.webm"
-              style={{
-                cursor: "pointer",
-                fontWeight: "600",
-                color: "black",
-              }}
-            >
-              ⬇ Download Full Video
-            </a>
-          )}
         </div>
       )}
 
