@@ -26,7 +26,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// register 
+// register
 app.post("/register", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -51,7 +51,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// login 
+// login
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
