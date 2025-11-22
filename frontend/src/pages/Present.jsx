@@ -111,12 +111,12 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 10000);
+        setTimeout(() => loopAudioRecorder.stop(), 20000);
       }
     };
 
     loopAudioRecorder.start();
-    setTimeout(() => loopAudioRecorder.stop(), 10000);
+    setTimeout(() => loopAudioRecorder.stop(), 20000);
 
     /* LOOP VIDEO */
     const loopVideoStream = new MediaStream([videoTrack]);
@@ -139,7 +139,7 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
-        setTimeout(() => loopVideoRecorder.stop(), 10000);
+        setTimeout(() => loopVideoRecorder.stop(), 20000);
       }
     };
 
