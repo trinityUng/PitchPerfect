@@ -164,7 +164,7 @@ export default function Present() {
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
     form.append("audio", blob);
-    await fetch("http://localhost:5000/process-audio", {
+    await fetch("http://localhost:5050/process-audio", {
       method: "POST",
       body: form,
     });
@@ -174,7 +174,7 @@ export default function Present() {
     const form = new FormData();
     form.append("video", blob);
 
-    const analysis = await fetch("http://localhost:5000/process-video", {
+    const analysis = await fetch("http://localhost:5050/process-video", {
       method: "POST",
       body: form,
     }).then((res) => res.json());
@@ -188,7 +188,7 @@ export default function Present() {
     }
 
     const feedbackResponse = await fetch(
-      "http://localhost:5000/video-feedback",
+      "http://localhost:5050/video-feedback",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
