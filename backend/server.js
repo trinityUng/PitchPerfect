@@ -3,8 +3,19 @@ import cors from "cors";
 import { analyzePresentation } from "./gemini.js";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
+
+// importing db schemas
+import User from "./models/User.js";
+
+import bcrypt from "bcrypt";
 
 dotenv.config();
+
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 // get gemini api key
 const ai = new GoogleGenAI({
@@ -14,6 +25,53 @@ const ai = new GoogleGenAI({
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// register 
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Missing username or password" });
+    }
+
+    const existing = await User.findOne({ username });
+    if (existing) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const hpassword = await bcrypt.hash(password, 10);
+
+    await User.create({ username, hpassword });
+
+    res.json({ message: "User registered successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+
+// login 
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid credentials." });
+    }
+
+    const valid = await bcrypt.compare(password, user.hpassword);
+    if (!valid) {
+      return res.status(400).json({ error: "Incorrect password." });
+    }
+
+    res.json({ message: "Login successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
 
 app.post("/analyze", async (req, res) => {
   try {
@@ -40,12 +98,12 @@ app.post("/make-query", async (req, res) => {
       model: "gemini-2.5-flash",
       contents: [
         {
-          "parts": [
+          parts: [
             {
-              "text": prompt
-            }
-          ]
-        }
+              text: prompt,
+            },
+          ],
+        },
       ],
     });
 
