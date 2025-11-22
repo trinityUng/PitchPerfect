@@ -1,7 +1,11 @@
 import express from "express";
 import cors from "cors";
 import { analyzePresentation } from "./gemini.js";
-import { GoogleGenAI } from "@google/genai";
+import {
+  GoogleGenAI,
+  createUserContent,
+  createPartFromUri,
+} from "@google/genai";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
@@ -9,6 +13,9 @@ import mongoose from "mongoose";
 import User from "./models/User.js";
 
 import bcrypt from "bcrypt";
+import multer from "multer"; // for audio capture
+
+const upload = multer({ dest: "uploads/" }); // temp upload folder
 
 dotenv.config();
 
@@ -113,6 +120,69 @@ app.post("/make-query", async (req, res) => {
     res.json({ result: text_response });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// process audio data
+app.post("/process-audio", upload.single("audio"), async (req, res) => {
+  try {
+    // sanity check, make sure audio file was received
+    if (!req.file) {
+      return res.status(400).json({ error: "No audio file received" });
+    }
+
+    console.log("Audio received:", req.file);
+
+    const audioPath = req.file.path; // temp file path
+    const mimeType = req.file.mimetype; // file type
+
+    // upload audio to gemini
+    const uploaded = await ai.files.upload({
+      file: audioPath,
+      config: { mimeType },
+    });
+
+    console.log("Uploaded to Gemini:", uploaded.uri);
+
+    // query speech feedback from gemini
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: createUserContent([
+        createPartFromUri(uploaded.uri, mimeType),
+        `
+You are an advanced public speaking and presentation coach.
+
+Analyze the speaker's voice in this audio and give **live-presentation feedback** including:
+
+- monotone vs expressiveness
+- pacing (too fast / too slow)
+- clarity of speech
+- confidence in voice
+- filler words
+- emotional tone
+- pauses and breathing
+- audience engagement cues
+
+Keep feedback concise and actionable.
+        `,
+      ]),
+    });
+
+    const text = response.candidates[0].content.parts[0].text;
+
+    res.json({ feedback: text });
+  } catch (err) {
+    console.error("Error in /process-audio:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// process video data
+app.post("/process-video", upload.single("video"), async (req, res) => {
+  try {
+  } catch (err) {
+    console.error("Error in /process-video:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
