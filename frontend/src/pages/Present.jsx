@@ -265,14 +265,14 @@ export default function Present() {
         playsInline
         muted
         style={{
-          width: isFullscreenMode ? "100vw" : "47vw",
+          width: isFullscreenMode ? "100vw" : "52vw",
           height: isFullscreenMode ? "100vh" : "auto",
           objectFit: isFullscreenMode ? "cover" : "contain",
           borderRadius: isFullscreenMode ? "0px" : "20px",
           transform: isFullscreenMode ? "scaleX(-1)" : "translate(-50%, -50%) scaleX(-1)",
           background: "black",
           position: isFullscreenMode ? "relative" : "absolute",
-          top: isFullscreenMode ? "0" : "42%",
+          top: isFullscreenMode ? "0" : "45%",
           left: isFullscreenMode ? "0" : "50%",
           display: "block",
         }}

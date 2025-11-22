@@ -35,32 +35,34 @@ const Layout = ({ children }) => {
            src="/images/log.png" 
            alt="Log" 
            style={{position: "fixed",
-            bottom: "-8%",
-            left: "10%",
-            width: "90vw",
+            bottom: "-7%",
+            left: "23%",
+            width: "55vw",
             maxWidth: "1100px",
             height: "auto",
             zIndex: 1,}}
          />
-         <img 
-           src="/images/pinkWeed.png" 
+
+                  <img 
+           src="/images/flowers2.png" 
            alt="Pink Weed" 
            style={{position: "fixed",
-            bottom: "-3%",
+            bottom: "-4%",
             left: "-10%",
-            width: "30vw",
-            maxWidth: "500px",
+            width: "50vw",
+            maxWidth: "600px",
             height: "auto",
             zIndex: 1,}}
          />
-         <img 
-           src="/images/brownWeed.png" 
+
+                  <img 
+           src="/images/flowers1.png" 
            alt="Brown Weed" 
            style={{position: "fixed",
-            bottom: "-5%",
-            right: "-12%",
-            width: "30vw",
-            maxWidth: "500px",
+            bottom: "-7%",
+            right: "-10%",
+            width: "50vw",
+            maxWidth: "650px",
             height: "auto",
             zIndex: 1,}}
          />
