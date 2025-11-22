@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const Profile = () => {
+const History = () => {
     const navigate = useNavigate();
     return (
         <div>
@@ -88,4 +88,4 @@ const Profile = () => {
     )
 }
 
-export default Profile;
+export default History;
