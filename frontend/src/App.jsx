@@ -82,7 +82,7 @@ function App() {
             alt="Button 1"
             className="button-image"
             style={{ width: "95px", height: "95px", cursor: "pointer" }}
-            onClick={() => navigate("/present")} 
+            onClick={() => navigate("/login")} 
           />
 
           <img
