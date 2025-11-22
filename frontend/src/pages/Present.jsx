@@ -5,7 +5,7 @@ import Layout from "./Layout.jsx";
 export default function Present() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
-  const containerRef = useRef(null); 
+  const containerRef = useRef(null);
   const streamRef = useRef(null);
 
   const [isRecordingState, setIsRecordingState] = useState(false);
@@ -112,13 +112,12 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 2000);
+        setTimeout(() => loopAudioRecorder.stop(), 10000);
       }
     };
 
     loopAudioRecorder.start();
-    setTimeout(() =>
-      loopAudioRecorder.stop(), 2000);
+    setTimeout(() => loopAudioRecorder.stop(), 10000);
 
     /* LOOP VIDEO */
     const loopVideoStream = new MediaStream([videoTrack]);
@@ -130,14 +129,18 @@ export default function Present() {
 
     loopVideoRecorder.ondataavailable = (e) => loopVideoChunks.push(e.data);
 
-    loopVideoRecorder.onstop = () => {
+    loopVideoRecorder.onstop = async () => {
       const blob = new Blob(loopVideoChunks, { type: "video/webm" });
       loopVideoChunks = [];
-      sendVideoChunk(blob);
+      //sendVideoChunk(blob);
+
+      const feedback = await sendVideoChunk(blob);
+
+      console.log("FEEDBACK RECEIVED:", feedback);
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
-        setTimeout(() => loopVideoRecorder.stop(), 2000);
+        setTimeout(() => loopVideoRecorder.stop(), 10000);
       }
     };
 
@@ -170,11 +173,47 @@ export default function Present() {
   const sendVideoChunk = async (blob) => {
     const form = new FormData();
     form.append("video", blob);
-    await fetch("http://localhost:5000/process-video", {
+
+    const analysis = await fetch("http://localhost:5000/process-video", {
       method: "POST",
       body: form,
-    });
+    }).then((res) => res.json());
+
+    console.log("received from server: ", analysis); // for debugging
+
+    // sanity check to make sure we received feedback
+    if (!analysis) {
+      console.error("Missing or invalid response: ", analysis);
+      return;
+    }
+
+    const feedbackResponse = await fetch(
+      "http://localhost:5000/video-feedback",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawResults: analysis.rawResults }),
+      }
+    );
+
+    const feedbackData = await feedbackResponse.json();
+
+    const feedback = feedbackData.feedback;
+    //console.log("Feedback from server:", feedback);
+
+    return feedback;
   };
+
+  const triggerVideoDownload = () => {
+  if (!fullVideoURL) return;
+
+  const a = document.createElement("a");
+  a.href = fullVideoURL;
+  a.download = "full-video.webm";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
 
   useEffect(() => {
     startCamera();
@@ -185,17 +224,23 @@ export default function Present() {
     <div ref={containerRef} style={{ position: "relative", minHeight: "100vh" }}>
       
       {/* FLOATING BUTTON (ALWAYS SHOWN EVEN IN FULLSCREEN) */}
-      <div style={{
-        position: "fixed",
-        top: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 9999,
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+        }}
+      >
         {!isRecordingState ? (
-          <button style={styles.btn} onClick={startRecording}>🎤 Start Recording</button>
+          <button style={styles.btn} onClick={startRecording}>
+            🎤 Start Recording
+          </button>
         ) : (
-          <button style={styles.stopBtn} onClick={stopRecording}>⏹ Stop Recording</button>
+          <button style={styles.stopBtn} onClick={stopRecording}>
+            ⏹ Stop Recording
+          </button>
         )}
       </div>
 
@@ -239,14 +284,16 @@ export default function Present() {
             bottom: isFullscreenMode ? "20px" : "120px",
             left: "50%",
             transform: "translateX(-50%)",
-            zIndex: 999999,    // <-- KEY FIX
+            zIndex: 999999, // <-- KEY FIX
             background: "rgba(255,255,255,0.8)",
             padding: "10px 20px",
             borderRadius: "12px",
             textAlign: "center",
           }}
         >
-          {fullAudioURL && (
+
+          {/* COMMENTED OUT PER REQUEST */}
+          {false && fullAudioURL && (
             <a
               href={fullAudioURL}
               download="full-audio.webm"
@@ -254,30 +301,15 @@ export default function Present() {
                 marginRight: "20px",
                 cursor: "pointer",
                 fontWeight: "600",
-                color: "black",
+                color: "black"
               }}
             >
               ⬇ Download Full Audio
             </a>
           )}
 
-          {fullVideoURL && (
-            <a
-              href={fullVideoURL}
-              download="full-video.webm"
-              style={{
-                cursor: "pointer",
-                fontWeight: "600",
-                color: "black",
-              }}
-            >
-              ⬇ Download Full Video
-            </a>
-          )}
         </div>
       )}
-
-
     </div>
     // </Layout>
   );
