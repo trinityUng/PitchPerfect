@@ -5,6 +5,10 @@ function App() {
 
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
+
+      {/* Continuous Goose Sound */}
+      <audio src="/images/goosesound.mp3" autoPlay loop />
+
       {/* Top-left image */}
       <img
         src="/images/clouds.png"
@@ -48,14 +52,16 @@ function App() {
 
       {/* Right image at bottom-right corner */}
       <img
-        src="/images/goose.png"
+        src="/images/goose.gif"
         alt="Right"
         style={{
           position: "fixed", 
           bottom: 0,         
           right: 0,         
-          width: "350px",
+          width: "2000px",
           height: "auto",
+          zIndex: -1,
+          pointerEvents: "none",
         }}
       />
 
