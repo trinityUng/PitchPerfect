@@ -203,6 +203,17 @@ export default function Present() {
     return feedback;
   };
 
+  const triggerVideoDownload = () => {
+  if (!fullVideoURL) return;
+
+  const a = document.createElement("a");
+  a.href = fullVideoURL;
+  a.download = "full-video.webm";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
   useEffect(() => {
     startCamera();
   }, []);
@@ -239,95 +250,50 @@ export default function Present() {
 
       {!isFullscreenMode && (
         <>
-          <img
-            src="/images/logo.png"
-            width={100}
-            style={{
-              position: "fixed",
-              top: "20px",
-              left: "20px",
-              zIndex: 5,
-            }}
-          />
+          <img src="/images/logo.png" width={100} style={{
+            position: "fixed", top: "20px", left: "20px", zIndex: 5
+          }}/>
 
-          <img
-            src="/images/log.png"
-            width={1100}
-            style={{
-              position: "fixed",
-              bottom: "-75px",
-              left: "14%",
-            }}
-          />
+          <img src="/images/log.png" width={1100} style={{
+            position: "fixed", bottom: "-75px", left: "14%"
+          }}/>
 
-          <img
-            src="/images/pinkWeed.png"
-            width={500}
-            style={{
-              position: "fixed",
-              bottom: "-20px",
-              left: "-125px",
-            }}
-          />
+          <img src="/images/pinkWeed.png" width={500} style={{
+            position: "fixed", bottom: "-20px", left: "-125px"
+          }}/>
 
-          <img
-            src="/images/brownWeed.png"
-            width={500}
-            style={{
-              position: "fixed",
-              bottom: "-80px",
-              right: "-175px",
-              zIndex: 1,
-            }}
-          />
+          <img src="/images/brownWeed.png" width={500} style={{
+            position: "fixed", bottom: "-80px", right: "-175px", zIndex: 1
+          }}/>
 
-          <img
-            src="/images/featherHome.png"
-            width={100}
-            style={{
-              position: "fixed",
-              left: "33%",
-              bottom: "10px",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/")}
-          />
+          <img src="/images/featherHome.png" width={100}
+               style={{ position: "fixed", left: "33%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/")}/>
 
-          <img
-            src="/images/nestProfile.png"
-            width={100}
-            style={{
-              position: "fixed",
-              left: "43%",
-              bottom: "10px",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/profile")}
-          />
+          <img src="/images/nestProfile.png" width={100}
+               style={{ position: "fixed", left: "43%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/profile")}/>
 
-          <img
-            src="/images/pawHistory.png"
-            width={100}
-            style={{
-              position: "fixed",
-              left: "53%",
-              bottom: "10px",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/history")}
-          />
+          <img src="/images/pawHistory.png" width={100}
+               style={{ position: "fixed", left: "53%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/history")}/>
 
+          {/* BINOCULAR ICON — turns yellow when video is ready */}
           <img
-            src="/images/binoExport.png"
+            src={fullVideoURL ? "/images/binoYellow.png" : "/images/binoExport.png"}
             width={100}
             style={{
               position: "fixed",
               left: "63%",
               bottom: "10px",
-              cursor: "pointer",
+              cursor: fullVideoURL ? "pointer" : "default",
+              opacity: fullVideoURL ? 1 : 0.6
             }}
-            onClick={() => navigate("/")}
+            onClick={() => {
+              if (fullVideoURL) triggerVideoDownload();
+            }}
           />
+
         </>
       )}
 
@@ -348,7 +314,7 @@ export default function Present() {
         }}
       />
 
-      {/* DOWNLOAD LINKS (always clickable) */}
+      {/* DOWNLOAD BOX (Only audio — commented out for now) */}
       {(fullAudioURL || fullVideoURL) && (
         <div
           style={{
@@ -363,7 +329,9 @@ export default function Present() {
             textAlign: "center",
           }}
         >
-          {fullAudioURL && (
+
+          {/* COMMENTED OUT PER REQUEST */}
+          {false && fullAudioURL && (
             <a
               href={fullAudioURL}
               download="full-audio.webm"
@@ -371,26 +339,13 @@ export default function Present() {
                 marginRight: "20px",
                 cursor: "pointer",
                 fontWeight: "600",
-                color: "black",
+                color: "black"
               }}
             >
               ⬇ Download Full Audio
             </a>
           )}
 
-          {fullVideoURL && (
-            <a
-              href={fullVideoURL}
-              download="full-video.webm"
-              style={{
-                cursor: "pointer",
-                fontWeight: "600",
-                color: "black",
-              }}
-            >
-              ⬇ Download Full Video
-            </a>
-          )}
         </div>
       )}
     </div>
