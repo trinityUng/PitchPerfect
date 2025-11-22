@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Layout from "./Layout";
+import Start from "./Start";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -69,23 +69,76 @@ const Login = () => {
     fontFamily: "Jua-Regular",
   };
 
+  // const ArrowRight = () => (
+  //   <svg
+  //     width="24"
+  //     height="24"
+  //     viewBox="0 0 24 24"
+  //     fill="none"
+  //     stroke="currentColor"
+  //     strokeWidth="2"
+  //     strokeLinecap="round"
+  //     strokeLinejoin="round"
+  //   >
+  //     <line x1="5" y1="12" x2="19" y2="12" />
+  //     <polyline points="12 5 19 12 12 19" />
+  //   </svg>
+  // );
+
+  const BackButton = () => {
+    const goBack = () => window.history.back();
+  
+    return (
+      <div
+        onClick={goBack}
+        style={{
+          cursor: "pointer",
+          padding: "2px",
+          left: "2px",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          fontSize: "18px",
+        }}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <label style={{ fontFamily: "Jua-Regular", color: "#1E406E", cursor: "pointer"}}>
+              Back
+            </label>
+      </div>
+    );
+  };
+
   return (
-    <Layout>
+    <Start>
       <div
         style={{
-          transform: "scale(0.9)",       // shrink the whole card
-          transformOrigin: "top center", // shrink downward
+          transform: "translate(-50%, -50%) scale(0.9)",       // center and shrink the whole card
+          transformOrigin: "center center",
           width: "700px",
-          margin: "60px auto 130px auto",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
           background: "#FFFDEB",
           padding: "15px 20px",
           borderRadius: "24px",
           boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
-          position: "relative",
           zIndex: 10,
           textAlign: "center",
         }}
       >
+        <BackButton/>
         <img
           src="/images/portrait.png"
           width={75}
@@ -107,12 +160,21 @@ const Login = () => {
         <form
           onSubmit={handleSubmit}
           style={{
+            // textAlign: "left",
+            // display: "flex",
+            // flexDirection: "column",
+            // gap: "18px",
+            // margin: "0 auto",
+
+            width: "100%",
+            maxWidth: "500px",
+            margin: "0 auto",
             textAlign: "left",
             display: "flex",
             flexDirection: "column",
             gap: "18px",
-            margin: "0 auto",
           }}
+          
         >
           {/* USERNAME */}
           <div>
@@ -156,13 +218,14 @@ const Login = () => {
               fontFamily: "Jua-Regular",
               cursor: "pointer",
               marginTop: "10px",
+              marginBottom: "10px"
             }}
           >
             Login
           </button>
         </form>
       </div>
-    </Layout>
+    </Start>
   );
 };
 
