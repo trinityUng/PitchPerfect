@@ -168,7 +168,7 @@ app.post("/process-audio", upload.single("audio"), async (req, res) => {
       config: { mimeType },
     });
 
-    console.log("Uploaded to Gemini:", uploaded.uri);
+    //console.log("Uploaded to Gemini:", uploaded.uri);
 
     // query speech feedback from gemini
     const response = await ai.models.generateContent({
@@ -190,11 +190,15 @@ Analyze the speaker's voice in this audio and give **live-presentation feedback*
 - audience engagement cues
 
 Keep feedback concise and actionable.
+
+The feedback will be displayed to the user every 30 seconds or so. Because of this, feedback should be 1-2 sentences in length, no longer than that.
         `,
       ]),
     });
 
     const text = response.candidates[0].content.parts[0].text;
+
+    console.log("feedback on speech: ", text);
 
     res.json({ feedback: text });
   } catch (err) {
@@ -206,7 +210,7 @@ Keep feedback concise and actionable.
 // process video data for body language
 app.post("/process-video", upload.single("video"), async (req, res) => {
   try {
-    // sanity check 
+    // sanity check
     if (!req.file) {
       return res.status(400).json({ error: "No video file received" });
     }
@@ -226,19 +230,19 @@ app.post("/process-video", upload.single("video"), async (req, res) => {
     await new Promise((resolve, reject) => {
       ffmpeg(videoPath)
         .output(path.join(framesDir, "frame-%03d.jpg"))
-        .outputOptions(["-vf fps=0.1"]) // can change later 
+        .outputOptions(["-vf fps=0.1"]) // can change later
         .on("end", resolve)
         .on("error", reject)
         .run();
     });
 
-    console.log("frames extracted.");
+    console.log("frames extracted");
 
     const frameFiles = fs
       .readdirSync(framesDir)
       .filter((f) => f.endsWith(".jpg"));
 
-    // face-api.js models loaded outside of POST method (to avoid loading on each request), then used here to process image data 
+    // face-api.js models loaded outside of POST method (to avoid loading on each request), then used here to process image data
 
     let results = [];
 
@@ -273,10 +277,88 @@ app.post("/process-video", upload.single("video"), async (req, res) => {
 });
 
 // use feedback from process-video to generate feedback using gemini api
-app.post("/request-video-feedback", (req, res) => {
+app.post("/video-feedback", async (req, res) => {
   try {
+    const { rawResults } = req.body; // output of the /process-video POST method
+
+    // sanity check
+    if (!rawResults || !Array.isArray(rawResults)) {
+      return res.status(400).json({ error: "Missing rawResults array" });
+    }
+
+    // get totals (if total = 0, no face was detected)
+    const totals = {
+      neutral: 0,
+      happy: 0,
+      sad: 0,
+      angry: 0,
+      fearful: 0,
+      disgusted: 0,
+      surprised: 0,
+    };
+
+    let count = 0;
+
+    for (const frame of rawResults) {
+      if (frame.detected && frame.expressions) {
+        count++;
+        for (const [emotion, value] of Object.entries(frame.expressions)) {
+          totals[emotion] += value;
+        }
+      }
+    }
+
+    // handle no face detected
+    if (count === 0) {
+      return res.json({
+        status: "success",
+        feedback: "Ensure your face is visible to the camera.",
+      });
+    }
+
+    // compute averages
+    const averages = {};
+    for (const emotion of Object.keys(totals)) {
+      averages[emotion] = totals[emotion] / count;
+    }
+
+    // prompt
+    const promptForGemini = `
+You are generating real-time presentation feedback based on facial expression data.
+
+Expression averages (0 to 1):
+${JSON.stringify(averages, null, 2)}
+
+Rules:
+- Output 1–2 short feedback cues.
+- Maximum 15 words each.
+- No emojis.
+- Be direct.
+- Be clear in stating the presenter's current expression, and how this can be improved (e.g., "Your current expression is grumpy. Smile more to engage the audience.").
+- The feedback doesn't need to be overly positive (we want it to be evident that the user's current expression is being correctly identified).
+- Only give feedback based on the data.
+- Examples: "Smile more to stay engaging", "Relax your facial tension", "Use more expressive facial cues".
+
+Now produce the cues:
+`;
+
+    // Query Gemini
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: promptForGemini,
+    });
+
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    // for testing
+    console.log("feedback on facial expression: ", text.trim());
+
+    // send only feedback in the response
+    res.json({
+      feedback: text.trim(),
+    });
   } catch (err) {
-    console.error("Error in /request-video-feedback:", err);
+    console.error("Error in /video-feedback:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
