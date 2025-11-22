@@ -58,7 +58,7 @@ function App() {
           position: "fixed", 
           bottom: 0,         
           right: 0,         
-          width: "2000px",
+          width: "350px",
           height: "auto",
           zIndex: -1,
           pointerEvents: "none",
