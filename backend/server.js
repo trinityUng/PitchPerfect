@@ -61,10 +61,10 @@ app.use(express.json());
 // register
 app.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Missing username or password" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Missing username, email, or password" });
     }
 
     const existing = await User.findOne({ username });
@@ -74,7 +74,7 @@ app.post("/register", async (req, res) => {
 
     const hpassword = await bcrypt.hash(password, 10);
 
-    await User.create({ username, hpassword });
+    await User.create({ username, email, hpassword });
 
     res.json({ message: "User registered successfully" });
   } catch (err) {
@@ -363,7 +363,7 @@ Now produce the cues:
   }
 });
 
-const PORT = 5000;
+const PORT = 5050;
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );
