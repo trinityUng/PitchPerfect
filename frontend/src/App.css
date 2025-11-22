@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+@font-face {
+  font-family: "Dua"; /* Choose a descriptive name */
+  src: local("Dua"), url("./fonts/Dua-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
