@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function Present() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
-  const containerRef = useRef(null); 
+  const containerRef = useRef(null);
   const streamRef = useRef(null);
 
   const [isRecordingState, setIsRecordingState] = useState(false);
@@ -111,13 +111,12 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 2000);
+        setTimeout(() => loopAudioRecorder.stop(), 10000);
       }
     };
 
     loopAudioRecorder.start();
-    setTimeout(() =>
-      loopAudioRecorder.stop(), 2000);
+    setTimeout(() => loopAudioRecorder.stop(), 10000);
 
     /* LOOP VIDEO */
     const loopVideoStream = new MediaStream([videoTrack]);
@@ -129,14 +128,18 @@ export default function Present() {
 
     loopVideoRecorder.ondataavailable = (e) => loopVideoChunks.push(e.data);
 
-    loopVideoRecorder.onstop = () => {
+    loopVideoRecorder.onstop = async () => {
       const blob = new Blob(loopVideoChunks, { type: "video/webm" });
       loopVideoChunks = [];
-      sendVideoChunk(blob);
+      //sendVideoChunk(blob);
+
+      const feedback = await sendVideoChunk(blob);
+
+      console.log("FEEDBACK RECEIVED:", feedback);
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
-        setTimeout(() => loopVideoRecorder.stop(), 2000);
+        setTimeout(() => loopVideoRecorder.stop(), 10000);
       }
     };
 
@@ -169,10 +172,35 @@ export default function Present() {
   const sendVideoChunk = async (blob) => {
     const form = new FormData();
     form.append("video", blob);
-    await fetch("http://localhost:5000/process-video", {
+
+    const analysis = await fetch("http://localhost:5000/process-video", {
       method: "POST",
       body: form,
-    });
+    }).then((res) => res.json());
+
+    console.log("received from server: ", analysis); // for debugging
+
+    // sanity check to make sure we received feedback
+    if (!analysis) {
+      console.error("Missing or invalid response: ", analysis);
+      return;
+    }
+
+    const feedbackResponse = await fetch(
+      "http://localhost:5000/video-feedback",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawResults: analysis.rawResults }),
+      }
+    );
+
+    const feedbackData = await feedbackResponse.json();
+
+    const feedback = feedbackData.feedback;
+    //console.log("Feedback from server:", feedback);
+
+    return feedback;
   };
 
   useEffect(() => {
@@ -180,20 +208,28 @@ export default function Present() {
   }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", minHeight: "100vh" }}>
-      
+    <div
+      ref={containerRef}
+      style={{ position: "relative", minHeight: "100vh" }}
+    >
       {/* FLOATING BUTTON (ALWAYS SHOWN EVEN IN FULLSCREEN) */}
-      <div style={{
-        position: "fixed",
-        top: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 9999,
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 9999,
+        }}
+      >
         {!isRecordingState ? (
-          <button style={styles.btn} onClick={startRecording}>🎤 Start Recording</button>
+          <button style={styles.btn} onClick={startRecording}>
+            🎤 Start Recording
+          </button>
         ) : (
-          <button style={styles.stopBtn} onClick={stopRecording}>⏹ Stop Recording</button>
+          <button style={styles.stopBtn} onClick={stopRecording}>
+            ⏹ Stop Recording
+          </button>
         )}
       </div>
 
@@ -203,37 +239,95 @@ export default function Present() {
 
       {!isFullscreenMode && (
         <>
-          <img src="/images/logo.png" width={100} style={{
-            position: "fixed", top: "20px", left: "20px", zIndex: 5
-          }}/>
+          <img
+            src="/images/logo.png"
+            width={100}
+            style={{
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              zIndex: 5,
+            }}
+          />
 
-          <img src="/images/log.png" width={1100} style={{
-            position: "fixed", bottom: "-75px", left: "14%"
-          }}/>
+          <img
+            src="/images/log.png"
+            width={1100}
+            style={{
+              position: "fixed",
+              bottom: "-75px",
+              left: "14%",
+            }}
+          />
 
-          <img src="/images/pinkWeed.png" width={500} style={{
-            position: "fixed", bottom: "-20px", left: "-125px"
-          }}/>
+          <img
+            src="/images/pinkWeed.png"
+            width={500}
+            style={{
+              position: "fixed",
+              bottom: "-20px",
+              left: "-125px",
+            }}
+          />
 
-          <img src="/images/brownWeed.png" width={500} style={{
-            position: "fixed", bottom: "-80px", right: "-175px", zIndex: 1
-          }}/>
+          <img
+            src="/images/brownWeed.png"
+            width={500}
+            style={{
+              position: "fixed",
+              bottom: "-80px",
+              right: "-175px",
+              zIndex: 1,
+            }}
+          />
 
-          <img src="/images/featherHome.png" width={100}
-               style={{ position: "fixed", left: "33%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/")}/>
+          <img
+            src="/images/featherHome.png"
+            width={100}
+            style={{
+              position: "fixed",
+              left: "33%",
+              bottom: "10px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          />
 
-          <img src="/images/nestProfile.png" width={100}
-               style={{ position: "fixed", left: "43%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/profile")}/>
+          <img
+            src="/images/nestProfile.png"
+            width={100}
+            style={{
+              position: "fixed",
+              left: "43%",
+              bottom: "10px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/profile")}
+          />
 
-          <img src="/images/pawHistory.png" width={100}
-               style={{ position: "fixed", left: "53%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/history")}/>
+          <img
+            src="/images/pawHistory.png"
+            width={100}
+            style={{
+              position: "fixed",
+              left: "53%",
+              bottom: "10px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/history")}
+          />
 
-          <img src="/images/binoExport.png" width={100}
-               style={{ position: "fixed", left: "63%", bottom: "10px", cursor: "pointer" }}
-               onClick={() => navigate("/")}/>
+          <img
+            src="/images/binoExport.png"
+            width={100}
+            style={{
+              position: "fixed",
+              left: "63%",
+              bottom: "10px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          />
         </>
       )}
 
@@ -262,7 +356,7 @@ export default function Present() {
             bottom: isFullscreenMode ? "20px" : "120px",
             left: "50%",
             transform: "translateX(-50%)",
-            zIndex: 999999,    // <-- KEY FIX
+            zIndex: 999999, // <-- KEY FIX
             background: "rgba(255,255,255,0.8)",
             padding: "10px 20px",
             borderRadius: "12px",
@@ -299,8 +393,6 @@ export default function Present() {
           )}
         </div>
       )}
-
-
     </div>
   );
 }
