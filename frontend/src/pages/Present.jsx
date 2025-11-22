@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Present() {
+  const navigate = useNavigate();
   const videoRef = useRef(null);
+  const containerRef = useRef(null); 
   const streamRef = useRef(null);
-  const [isRecordingState, setIsRecordingState] = useState(false);
 
+  const [isRecordingState, setIsRecordingState] = useState(false);
+  const [isFullscreenMode, setIsFullscreenMode] = useState(false);
 
   // RECORDERS
   const loopAudioRecorderRef = useRef(null);
@@ -12,16 +16,28 @@ export default function Present() {
   const fullAudioRecorderRef = useRef(null);
   const fullVideoRecorderRef = useRef(null);
 
-  // INTERVAL STOP FLAGS
   const recordingFlagRef = useRef(false);
 
-  // DOWNLOAD URLs
   const [fullAudioURL, setFullAudioURL] = useState(null);
   const [fullVideoURL, setFullVideoURL] = useState(null);
 
-  /* ---------------------------------------------
-     1. START CAMERA
-  --------------------------------------------- */
+  /* ENTER FULLSCREEN */
+  const enterFullscreen = () => {
+    if (containerRef.current.requestFullscreen) {
+      containerRef.current.requestFullscreen();
+      setIsFullscreenMode(true);
+    }
+  };
+
+  /* EXIT FULLSCREEN */
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+    setIsFullscreenMode(false);
+  };
+
+  /* START CAMERA */
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -31,19 +47,16 @@ export default function Present() {
 
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
-
     } catch (err) {
-      console.error("Camera access error:", err);
-      alert("Camera or microphone not available.");
+      console.error("Camera error:", err);
     }
   };
 
-  /* ---------------------------------------------
-     2. START RECORDING
-  --------------------------------------------- */
+  /* START RECORDING */
   const startRecording = () => {
     if (!streamRef.current) return;
 
+    enterFullscreen();
     recordingFlagRef.current = true;
     setIsRecordingState(true);
 
@@ -51,9 +64,7 @@ export default function Present() {
     const audioTrack = stream.getAudioTracks()[0];
     const videoTrack = stream.getVideoTracks()[0];
 
-    /* -------------------------
-       FULL VIDEO (with audio)
-    --------------------------*/
+    /* FULL VIDEO */
     let fullVideoChunks = [];
     const fullVideoStream = new MediaStream([videoTrack, audioTrack]);
     const fullVideoRecorder = new MediaRecorder(fullVideoStream, {
@@ -66,13 +77,9 @@ export default function Present() {
       const blob = new Blob(fullVideoChunks, { type: "video/webm" });
       setFullVideoURL(URL.createObjectURL(blob));
     };
-
     fullVideoRecorder.start();
 
-
-    /* -------------------------
-       FULL AUDIO (microphone only)
-    --------------------------*/
+    /* FULL AUDIO */
     let fullAudioChunks = [];
     const fullAudioStream = new MediaStream([audioTrack]);
     const fullAudioRecorder = new MediaRecorder(fullAudioStream, {
@@ -85,16 +92,11 @@ export default function Present() {
       const blob = new Blob(fullAudioChunks, { type: "audio/webm" });
       setFullAudioURL(URL.createObjectURL(blob));
     };
-
     fullAudioRecorder.start();
 
-
-    /* -------------------------
-       LOOP AUDIO RECORDER (2 sec)
-    --------------------------*/
+    /* LOOP AUDIO */
     const loopAudioStream = new MediaStream([audioTrack]);
     let loopAudioChunks = [];
-
     const loopAudioRecorder = new MediaRecorder(loopAudioStream, {
       mimeType: "audio/webm",
     });
@@ -105,7 +107,6 @@ export default function Present() {
     loopAudioRecorder.onstop = () => {
       const blob = new Blob(loopAudioChunks, { type: "audio/webm" });
       loopAudioChunks = [];
-
       sendAudioChunk(blob);
 
       if (recordingFlagRef.current) {
@@ -115,16 +116,12 @@ export default function Present() {
     };
 
     loopAudioRecorder.start();
-    setTimeout(() => loopAudioRecorder.stop(), 2000);
+    setTimeout(() =>
+      loopAudioRecorder.stop(), 2000);
 
-
-
-    /* -------------------------
-       LOOP VIDEO RECORDER (2 sec)
-    --------------------------*/
+    /* LOOP VIDEO */
     const loopVideoStream = new MediaStream([videoTrack]);
     let loopVideoChunks = [];
-
     const loopVideoRecorder = new MediaRecorder(loopVideoStream, {
       mimeType: "video/webm; codecs=vp8",
     });
@@ -135,7 +132,6 @@ export default function Present() {
     loopVideoRecorder.onstop = () => {
       const blob = new Blob(loopVideoChunks, { type: "video/webm" });
       loopVideoChunks = [];
-
       sendVideoChunk(blob);
 
       if (recordingFlagRef.current) {
@@ -148,13 +144,12 @@ export default function Present() {
     setTimeout(() => loopVideoRecorder.stop(), 2000);
   };
 
-  /* ---------------------------------------------
-     3. STOP RECORDING
-  --------------------------------------------- */
+  /* STOP RECORDING */
   const stopRecording = () => {
     recordingFlagRef.current = false;
     setIsRecordingState(false);
 
+    exitFullscreen();
 
     fullVideoRecorderRef.current?.stop();
     fullAudioRecorderRef.current?.stop();
@@ -162,111 +157,169 @@ export default function Present() {
     loopVideoRecorderRef.current?.stop();
   };
 
-  /* ---------------------------------------------
-     4. SEND AUDIO CHUNK TO BACKEND
-  --------------------------------------------- */
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
     form.append("audio", blob);
-
-    try {
-      await fetch("http://localhost:5000/audio-chunk", {
-        method: "POST",
-        body: form,
-      });
-    } catch (err) {
-      console.error("Audio chunk error:", err);
-    }
+    await fetch("http://localhost:5000/process-audio", {
+      method: "POST",
+      body: form,
+    });
   };
 
-  /* ---------------------------------------------
-     5. SEND VIDEO CHUNK TO BACKEND
-  --------------------------------------------- */
   const sendVideoChunk = async (blob) => {
     const form = new FormData();
     form.append("video", blob);
-
-    try {
-      await fetch("http://localhost:5000/video-chunk", {
-        method: "POST",
-        body: form,
-      });
-    } catch (err) {
-      console.error("Video chunk error:", err);
-    }
+    await fetch("http://localhost:5000/process-video", {
+      method: "POST",
+      body: form,
+    });
   };
 
-  /* ---------------------------------------------
-     INIT CAMERA
-  --------------------------------------------- */
   useEffect(() => {
     startCamera();
   }, []);
 
-  /* ---------------------------------------------
-     RENDER UI
-  --------------------------------------------- */
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
-      <h1>Presentation Mode</h1>
+    <div ref={containerRef} style={{ position: "relative", minHeight: "100vh" }}>
+      
+      {/* FLOATING BUTTON (ALWAYS SHOWN EVEN IN FULLSCREEN) */}
+      <div style={{
+        position: "fixed",
+        top: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 9999,
+      }}>
+        {!isRecordingState ? (
+          <button style={styles.btn} onClick={startRecording}>🎤 Start Recording</button>
+        ) : (
+          <button style={styles.stopBtn} onClick={stopRecording}>⏹ Stop Recording</button>
+        )}
+      </div>
 
+      {/* ------------------------------------------- */}
+      {/* NORMAL MODE DECORATIONS (HIDDEN IN FULLSCREEN) */}
+      {/* ------------------------------------------- */}
+
+      {!isFullscreenMode && (
+        <>
+          <img src="/images/logo.png" width={100} style={{
+            position: "fixed", top: "20px", left: "20px", zIndex: 5
+          }}/>
+
+          <img src="/images/log.png" width={1100} style={{
+            position: "fixed", bottom: "-75px", left: "14%"
+          }}/>
+
+          <img src="/images/pinkWeed.png" width={500} style={{
+            position: "fixed", bottom: "-20px", left: "-125px"
+          }}/>
+
+          <img src="/images/brownWeed.png" width={500} style={{
+            position: "fixed", bottom: "-80px", right: "-175px", zIndex: 1
+          }}/>
+
+          <img src="/images/featherHome.png" width={100}
+               style={{ position: "fixed", left: "33%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/")}/>
+
+          <img src="/images/nestProfile.png" width={100}
+               style={{ position: "fixed", left: "43%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/profile")}/>
+
+          <img src="/images/pawHistory.png" width={100}
+               style={{ position: "fixed", left: "53%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/history")}/>
+
+          <img src="/images/binoExport.png" width={100}
+               style={{ position: "fixed", left: "63%", bottom: "10px", cursor: "pointer" }}
+               onClick={() => navigate("/")}/>
+        </>
+      )}
+
+      {/* VIDEO (normal size OR fullscreen) */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
         muted
         style={{
-          width: "70vw",
-          maxWidth: "900px",
-          borderRadius: "20px",
+          width: isFullscreenMode ? "100vw" : "47vw",
+          height: isFullscreenMode ? "100vh" : "auto",
+          objectFit: isFullscreenMode ? "cover" : "contain",
+          borderRadius: isFullscreenMode ? "0px" : "20px",
           transform: "scaleX(-1)",
+          background: "black",
+          marginTop: isFullscreenMode ? "0px" : "80px",
         }}
-      ></video>
+      />
 
-      {!isRecordingState ? (
-        <button onClick={startRecording} style={styles.btn}>
-          🎤 Start Recording
-        </button>
-      ) : (
-        <button onClick={stopRecording} style={styles.stopBtn}>
-          ⏹ Stop Recording
-        </button>
-      )}
+      {/* DOWNLOAD LINKS (always clickable) */}
+      {(fullAudioURL || fullVideoURL) && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: isFullscreenMode ? "20px" : "120px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 999999,    // <-- KEY FIX
+            background: "rgba(255,255,255,0.8)",
+            padding: "10px 20px",
+            borderRadius: "12px",
+            textAlign: "center",
+          }}
+        >
+          {fullAudioURL && (
+            <a
+              href={fullAudioURL}
+              download="full-audio.webm"
+              style={{
+                marginRight: "20px",
+                cursor: "pointer",
+                fontWeight: "600",
+                color: "black",
+              }}
+            >
+              ⬇ Download Full Audio
+            </a>
+          )}
 
-      {fullAudioURL && (
-        <div style={{ marginTop: "20px" }}>
-          <a href={fullAudioURL} download="full-audio.webm">
-            ⬇ Download Full Audio
-          </a>
+          {fullVideoURL && (
+            <a
+              href={fullVideoURL}
+              download="full-video.webm"
+              style={{
+                cursor: "pointer",
+                fontWeight: "600",
+                color: "black",
+              }}
+            >
+              ⬇ Download Full Video
+            </a>
+          )}
         </div>
       )}
 
-      {fullVideoURL && (
-        <div style={{ marginTop: "10px" }}>
-          <a href={fullVideoURL} download="full-video.webm">
-            ⬇ Download Full Video (audio + visual)
-          </a>
-        </div>
-      )}
+
     </div>
   );
 }
 
 const styles = {
   btn: {
-    padding: "12px 20px",
-    fontSize: "1.2rem",
-    borderRadius: "10px",
+    padding: "6px 14px",
+    fontSize: "1rem",
+    borderRadius: "8px",
     cursor: "pointer",
-    marginTop: "20px",
+    background: "black",
+    color: "white",
   },
   stopBtn: {
-    padding: "12px 20px",
-    fontSize: "1.2rem",
-    borderRadius: "10px",
+    padding: "6px 14px",
+    fontSize: "1rem",
+    borderRadius: "8px",
     cursor: "pointer",
     background: "red",
     color: "white",
-    marginTop: "20px",
   },
 };
