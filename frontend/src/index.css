@@ -23,6 +23,16 @@ html, body, #root {
   align-items: center;
 }
 
+.button-image {
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s; 
+}
+
+.button-image:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
 @font-face {
   font-family: "Jua-Regular";
   src: url("/fonts/Jua-Regular.ttf") format("truetype");
