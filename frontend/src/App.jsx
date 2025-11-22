@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 function App() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
       {/* Top-left image */}
@@ -77,7 +81,7 @@ function App() {
             src="/images/lilypadLogin.png"
             alt="Button 1"
             style={{ width: "95px", height: "95px", cursor: "pointer" }}
-            onClick={() => navigate("/page1")} 
+            onClick={() => navigate("/present")} 
           />
 
           <img
