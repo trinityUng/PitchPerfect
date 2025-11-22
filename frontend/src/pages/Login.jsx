@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Layout from "./Layout";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,11 +17,9 @@ const Login = () => {
     });
   };
 
-  // ---- SIGNUP SUBMIT FUNCTION ----
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // sanity check, make sure both fields are filled
     if (!formData.username || !formData.password) {
       alert("Missing fields.");
       return;
@@ -39,21 +38,13 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        console.log(data.error);
-
         if (data.error === "Incorrect password.") {
           alert("Incorrect password.");
-          setFormData({
-            password: "",
-          });
+          setFormData({ ...formData, password: "" });
         } else {
           alert("Failed to login.");
-          setFormData({
-            username: "",
-            password: "",
-          });
+          setFormData({ username: "", password: "" });
         }
-
         return;
       }
 
@@ -65,10 +56,9 @@ const Login = () => {
     }
   };
 
-  // ---- INPUT STYLE ----
   const inputStyle = {
     width: "100%",
-    padding: "10px 14px",
+    padding: "4px 4px",
     marginTop: "4px",
     background: "#EFF3FF",
     border: "none",
@@ -80,67 +70,11 @@ const Login = () => {
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100vw",
-        minHeight: "100vh", // <-- FIXED
-        overflow: "visible", // <-- FIXED
-      }}
-    >
-      {/* ---- SIDE DECOR IMAGES ---- */}
-      <img
-        src="/images/pinkWeed.png"
-        width={430}
-        style={{
-          position: "absolute",
-          left: -80,
-          bottom: -20,
-          zIndex: 0,
-        }}
-      />
-
-      <img
-        src="/images/brownWeed.png"
-        width={430}
-        style={{
-          position: "absolute",
-          right: -90,
-          bottom: -60,
-          zIndex: 0,
-        }}
-      />
-
-      {/* --- LOGO TOP LEFT --- */}
-      <img
-        src="/images/logo.png"
-        width={95}
-        style={{
-          position: "absolute",
-          top: 20,
-          left: 20,
-          zIndex: 3,
-        }}
-      />
-
-      {/* --- BOTTOM LOG IMAGE (FIXED z-index!!) --- */}
-      <img
-        src="/images/log.png"
-        width={950}
-        style={{
-          position: "absolute",
-          bottom: -55,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 0, // <<< FIXED — no longer blocks yellow box
-        }}
-      />
-
-      {/* ---- SIGN-UP CARD ---- */}
+    <Layout>
       <div
         style={{
-          transform: "scale(0.9)", // shrink the whole card
-          transformOrigin: "top center", // shrink downward from the top
+          transform: "scale(0.9)",       // shrink the whole card
+          transformOrigin: "top center", // shrink downward
           width: "700px",
           margin: "60px auto 130px auto",
           background: "#FFFDEB",
@@ -152,7 +86,6 @@ const Login = () => {
           textAlign: "center",
         }}
       >
-        {/* Profile icon */}
         <img
           src="/images/portrait.png"
           width={75}
@@ -162,30 +95,28 @@ const Login = () => {
 
         <h1
           style={{
-            color: "black",
+            color: "#1E406E",
             fontFamily: "Jua-Regular",
             marginBottom: "20px",
             fontSize: "1.6rem",
           }}
         >
-          Sign Up
+          Login
         </h1>
 
         <form
           onSubmit={handleSubmit}
           style={{
-            width: "100%",
-            maxWidth: "500px",
-            margin: "0 auto",
             textAlign: "left",
             display: "flex",
             flexDirection: "column",
             gap: "18px",
+            margin: "0 auto",
           }}
         >
           {/* USERNAME */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Username
             </label>
             <input
@@ -199,7 +130,7 @@ const Login = () => {
 
           {/* PASSWORD */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Password
             </label>
             <input
@@ -211,7 +142,7 @@ const Login = () => {
             />
           </div>
 
-          {/* SUBMIT BUTTON */}
+          {/* SUBMIT */}
           <button
             type="submit"
             style={{
@@ -227,49 +158,11 @@ const Login = () => {
               marginTop: "10px",
             }}
           >
-            Sign Up
+            Login
           </button>
         </form>
       </div>
-
-      {/* ---- FLOATING BOTTOM NAV ---- */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 5,
-          display: "flex",
-          gap: "60px",
-        }}
-      >
-        <img
-          src="/images/featherHome.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/")}
-        />
-        <img
-          src="/images/nestProfile.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/profile")}
-        />
-        <img
-          src="/images/pawHistory.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/history")}
-        />
-        <img
-          src="/images/binoExport.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/")}
-        />
-      </div>
-    </div>
+    </Layout>
   );
 };
 
