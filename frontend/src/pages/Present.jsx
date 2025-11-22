@@ -149,17 +149,20 @@ export default function Present() {
   };
 
   /* STOP RECORDING */
-  const stopRecording = () => {
-    recordingFlagRef.current = false;
-    setIsRecordingState(false);
+      const stopRecording = () => {
+      recordingFlagRef.current = false;
+      setIsRecordingState(false);
 
-    exitFullscreen();
+      exitFullscreen();
 
-    fullVideoRecorderRef.current?.stop();
-    fullAudioRecorderRef.current?.stop();
-    loopAudioRecorderRef.current?.stop();
-    loopVideoRecorderRef.current?.stop();
-  };
+      fullVideoRecorderRef.current?.stop();
+      fullAudioRecorderRef.current?.stop();
+      loopAudioRecorderRef.current?.stop();
+      loopVideoRecorderRef.current?.stop();
+      
+      navigate("/feedback");
+    };
+
 
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
