@@ -47,3 +47,7 @@
   font-weight: normal;
   font-style: normal;
 }
+
+label {
+  font-family: "Dua", sans-serif;
+}
