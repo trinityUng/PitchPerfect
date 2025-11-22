@@ -61,10 +61,10 @@ app.use(express.json());
 // register
 app.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Missing username or password" });
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Missing username, email, or password" });
     }
 
     const existing = await User.findOne({ username });
@@ -74,7 +74,7 @@ app.post("/register", async (req, res) => {
 
     const hpassword = await bcrypt.hash(password, 10);
 
-    await User.create({ username, hpassword });
+    await User.create({ username, email, hpassword });
 
     res.json({ message: "User registered successfully" });
   } catch (err) {
@@ -190,13 +190,15 @@ Analyze the speaker's voice in this audio and give **live-presentation feedback*
 - audience engagement cues
 
 Keep feedback concise and actionable.
+
+The feedback will be displayed to the user every 30 seconds or so. Because of this, feedback should be 1-2 sentences in length, no longer than that.
         `,
       ]),
     });
 
     const text = response.candidates[0].content.parts[0].text;
 
-    //console.log("feedback on speech: ", text);
+    console.log("feedback on speech: ", text);
 
     res.json({ feedback: text });
   } catch (err) {
@@ -331,7 +333,9 @@ Rules:
 - Output 1–2 short feedback cues.
 - Maximum 15 words each.
 - No emojis.
-- Sound supportive and direct.
+- Be direct.
+- Be clear in stating the presenter's current expression, and how this can be improved (e.g., "Your current expression is grumpy. Smile more to engage the audience.").
+- The feedback doesn't need to be overly positive (we want it to be evident that the user's current expression is being correctly identified).
 - Only give feedback based on the data.
 - Examples: "Smile more to stay engaging", "Relax your facial tension", "Use more expressive facial cues".
 
@@ -359,7 +363,7 @@ Now produce the cues:
   }
 });
 
-const PORT = 5000;
+const PORT = 5050;
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );

@@ -40,6 +40,12 @@ html, body, #root {
   font-style: normal;
 }
 
+@font-face {
+  font-family: "Harmattan";
+  src: url("/fonts/harmattan-regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
 
 h1 {
   font-family: "Jua-Regular", sans-serif;

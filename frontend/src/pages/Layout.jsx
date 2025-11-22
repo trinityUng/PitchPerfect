@@ -89,7 +89,7 @@ const Layout = ({ children }) => {
              />
            ))}
          </div>
-      <div styles={{    maxWidth: "90%",
+         {/* <div style={{    maxWidth: "90%",
     margin: "0 auto",
     padding: "3vh 2vw",
     background: "#fffdeb",
@@ -98,8 +98,9 @@ const Layout = ({ children }) => {
     position: "relative",
     zIndex: 10,
     minHeight: "60vh",}}>
-        {children}
-      </div>
+        
+      </div> */}
+      {children}
 
     </div>
   );

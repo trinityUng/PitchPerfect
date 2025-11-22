@@ -5,14 +5,18 @@ function App() {
 
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
+
+      {/* Continuous Goose Sound */}
+      <audio src="/images/goosesound.mp3" autoPlay loop />
+
       {/* Top-left image */}
       <img
         src="/images/clouds.png"
         alt="Top Left"
         style={{
           position: "fixed",
-          top: 50,            
-          left: 0,         
+          top: 50,
+          left: 0,
           width: "600px",
           height: "auto",
           opacity: 0.6,
@@ -32,15 +36,15 @@ function App() {
           opacity: 0.6,
         }}
       />
-      
+
       {/* Left image at bottom-left corner */}
       <img
         src="/images/weeds.png"
         alt="Left"
         style={{
-          position: "fixed", 
-          bottom: -100,       
-          left: -75,       
+          position: "fixed",
+          bottom: -100,
+          left: -75,
           width: "550px",
           height: "auto",
         }}
@@ -48,14 +52,16 @@ function App() {
 
       {/* Right image at bottom-right corner */}
       <img
-        src="/images/goose.png"
+        src="/images/goose.gif"
         alt="Right"
         style={{
           position: "fixed", 
           bottom: 0,         
           right: 0,         
-          width: "350px",
+          width: "2000px",
           height: "auto",
+          zIndex: -1,
+          pointerEvents: "none",
         }}
       />
 
@@ -72,9 +78,14 @@ function App() {
           zIndex: 1,
         }}
       >
-        <h1 style={{ fontSize: "8rem", textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)"}}>
+        <h1
+          style={{
+            fontSize: "8rem",
+            textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
+          }}
+        >
           Welcome!
-          </h1>
+        </h1>
 
         <div style={{ display: "flex", gap: "3rem", marginTop: "-7rem" }}>
           <img
@@ -82,7 +93,7 @@ function App() {
             alt="Button 1"
             className="button-image"
             style={{ width: "95px", height: "95px", cursor: "pointer" }}
-            onClick={() => navigate("/present")} 
+            onClick={() => navigate("/login")} 
           />
 
           <img
@@ -90,10 +101,9 @@ function App() {
             alt="Button 2"
             className="button-image"
             style={{ width: "95px", height: "95px", cursor: "pointer" }}
-            onClick={() => navigate("/profile")} 
+            onClick={() => navigate("/profile")}
           />
         </div>
-
       </div>
     </div>
   );

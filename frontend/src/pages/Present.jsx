@@ -112,12 +112,12 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 10000);
+        setTimeout(() => loopAudioRecorder.stop(), 20000);
       }
     };
 
     loopAudioRecorder.start();
-    setTimeout(() => loopAudioRecorder.stop(), 10000);
+    setTimeout(() => loopAudioRecorder.stop(), 20000);
 
     /* LOOP VIDEO */
     const loopVideoStream = new MediaStream([videoTrack]);
@@ -140,7 +140,7 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
-        setTimeout(() => loopVideoRecorder.stop(), 10000);
+        setTimeout(() => loopVideoRecorder.stop(), 20000);
       }
     };
 
@@ -149,22 +149,25 @@ export default function Present() {
   };
 
   /* STOP RECORDING */
-  const stopRecording = () => {
-    recordingFlagRef.current = false;
-    setIsRecordingState(false);
+      const stopRecording = () => {
+      recordingFlagRef.current = false;
+      setIsRecordingState(false);
 
-    exitFullscreen();
+      exitFullscreen();
 
-    fullVideoRecorderRef.current?.stop();
-    fullAudioRecorderRef.current?.stop();
-    loopAudioRecorderRef.current?.stop();
-    loopVideoRecorderRef.current?.stop();
-  };
+      fullVideoRecorderRef.current?.stop();
+      fullAudioRecorderRef.current?.stop();
+      loopAudioRecorderRef.current?.stop();
+      loopVideoRecorderRef.current?.stop();
+      
+      navigate("/feedback");
+    };
+
 
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
     form.append("audio", blob);
-    await fetch("http://localhost:5000/process-audio", {
+    await fetch("http://localhost:5050/process-audio", {
       method: "POST",
       body: form,
     });
@@ -174,7 +177,7 @@ export default function Present() {
     const form = new FormData();
     form.append("video", blob);
 
-    const analysis = await fetch("http://localhost:5000/process-video", {
+    const analysis = await fetch("http://localhost:5050/process-video", {
       method: "POST",
       body: form,
     }).then((res) => res.json());
@@ -188,7 +191,7 @@ export default function Present() {
     }
 
     const feedbackResponse = await fetch(
-      "http://localhost:5000/video-feedback",
+      "http://localhost:5050/video-feedback",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

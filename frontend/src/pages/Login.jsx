@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 
-const Profile = () => {
+const Login = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
     password: "",
-    repeatPassword: "",
   });
 
   const handleChange = (e) => {
@@ -22,18 +20,17 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.repeatPassword) {
-      alert("Passwords do not match!");
+    if (!formData.username || !formData.password) {
+      alert("Missing fields.");
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:5050/register", {
+      const res = await fetch("http://localhost:5050/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.username,
-          email: formData.email,
           password: formData.password,
         }),
       });
@@ -41,11 +38,17 @@ const Profile = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error);
+        if (data.error === "Incorrect password.") {
+          alert("Incorrect password.");
+          setFormData({ ...formData, password: "" });
+        } else {
+          alert("Failed to login.");
+          setFormData({ username: "", password: "" });
+        }
         return;
       }
 
-      alert("Signup successful!");
+      alert("Login successful!");
       navigate("/present");
     } catch (err) {
       console.error(err);
@@ -55,7 +58,7 @@ const Profile = () => {
 
   const inputStyle = {
     width: "100%",
-    padding: "10px 14px",
+    padding: "4px 4px",
     marginTop: "4px",
     background: "#EFF3FF",
     border: "none",
@@ -68,11 +71,10 @@ const Profile = () => {
 
   return (
     <Layout>
-      {/* YELLOW SIGN-UP CARD ONLY */}
       <div
         style={{
-          transform: "scale(0.9)",
-          transformOrigin: "top center",
+          transform: "scale(0.9)",       // shrink the whole card
+          transformOrigin: "top center", // shrink downward
           width: "700px",
           margin: "60px auto 130px auto",
           background: "#FFFDEB",
@@ -84,7 +86,6 @@ const Profile = () => {
           textAlign: "center",
         }}
       >
-        {/* Profile icon */}
         <img
           src="/images/portrait.png"
           width={75}
@@ -94,30 +95,28 @@ const Profile = () => {
 
         <h1
           style={{
-            color: "black",
+            color: "#1E406E",
             fontFamily: "Jua-Regular",
             marginBottom: "20px",
             fontSize: "1.6rem",
           }}
         >
-          Sign Up
+          Login
         </h1>
 
         <form
           onSubmit={handleSubmit}
           style={{
-            width: "100%",
-            maxWidth: "500px",
-            margin: "0 auto",
             textAlign: "left",
             display: "flex",
             flexDirection: "column",
             gap: "18px",
+            margin: "0 auto",
           }}
         >
           {/* USERNAME */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Username
             </label>
             <input
@@ -129,23 +128,9 @@ const Profile = () => {
             />
           </div>
 
-          {/* EMAIL */}
-          <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
-              Email
-            </label>
-            <input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-
           {/* PASSWORD */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Password
             </label>
             <input
@@ -157,21 +142,7 @@ const Profile = () => {
             />
           </div>
 
-          {/* REPEAT PASSWORD */}
-          <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
-              Repeat Password
-            </label>
-            <input
-              name="repeatPassword"
-              type="password"
-              value={formData.repeatPassword}
-              onChange={handleChange}
-              style={inputStyle}
-            />
-          </div>
-
-          {/* SUBMIT BUTTON */}
+          {/* SUBMIT */}
           <button
             type="submit"
             style={{
@@ -187,7 +158,7 @@ const Profile = () => {
               marginTop: "10px",
             }}
           >
-            Sign Up
+            Login
           </button>
         </form>
       </div>
@@ -195,4 +166,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default Login;
