@@ -15,6 +15,31 @@ import User from "./models/User.js";
 import bcrypt from "bcrypt";
 import multer from "multer"; // for audio capture
 
+// for video processing
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import fs from "fs";
+import path from "path";
+import * as faceapi from "face-api.js";
+import { Canvas, Image, ImageData, loadImage } from "canvas";
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
+faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
+
+// load face-api models (just once)
+console.log("loading face-api.js models...");
+
+await Promise.all([
+  faceapi.nets.tinyFaceDetector.loadFromDisk("models/face"),
+  faceapi.nets.faceExpressionNet.loadFromDisk("models/face"),
+  faceapi.nets.faceLandmark68Net.loadFromDisk("models/face"),
+]);
+
+console.log("finished loading face-api.js models");
+
+//const ffmpeg = createFFmpeg({ log: false });
+
 const upload = multer({ dest: "uploads/" }); // temp upload folder
 
 dotenv.config();
@@ -178,11 +203,80 @@ Keep feedback concise and actionable.
   }
 });
 
-// process video data
+// process video data for body language
 app.post("/process-video", upload.single("video"), async (req, res) => {
   try {
+    // sanity check 
+    if (!req.file) {
+      return res.status(400).json({ error: "No video file received" });
+    }
+
+    const videoPath = req.file.path;
+    const framesDir = "./uploads/frames";
+
+    // Clear or create frames directory
+    fs.mkdirSync(framesDir, { recursive: true });
+    for (const f of fs.readdirSync(framesDir)) {
+      fs.unlinkSync(path.join(framesDir, f));
+    }
+
+    console.log("extracting frames...");
+
+    // extract 0.1 frames per second to perform analysis of facial expression
+    await new Promise((resolve, reject) => {
+      ffmpeg(videoPath)
+        .output(path.join(framesDir, "frame-%03d.jpg"))
+        .outputOptions(["-vf fps=0.1"]) // can change later 
+        .on("end", resolve)
+        .on("error", reject)
+        .run();
+    });
+
+    console.log("frames extracted.");
+
+    const frameFiles = fs
+      .readdirSync(framesDir)
+      .filter((f) => f.endsWith(".jpg"));
+
+    // face-api.js models loaded outside of POST method (to avoid loading on each request), then used here to process image data 
+
+    let results = [];
+
+    for (const file of frameFiles) {
+      const imgPath = path.join(framesDir, file);
+      const img = await loadImage(imgPath);
+
+      const canvas = new Canvas(img.width, img.height);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      const detection = await faceapi
+        .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions())
+        .withFaceExpressions();
+
+      results.push({
+        frame: file,
+        detected: !!detection,
+        expressions: detection?.expressions || null,
+      });
+    }
+
+    res.json({
+      status: "success",
+      frames: frameFiles.length,
+      rawResults: results,
+    });
   } catch (err) {
     console.error("Error in /process-video:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// use feedback from process-video to generate feedback using gemini api
+app.post("/request-video-feedback", (req, res) => {
+  try {
+  } catch (err) {
+    console.error("Error in /request-video-feedback:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
