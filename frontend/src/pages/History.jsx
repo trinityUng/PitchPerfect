@@ -47,6 +47,69 @@ const History = () => {
                 position: 'fixed',
                 zIndex: 1
             }}/>
+
+            <h1 style={{ 
+                    fontSize: "3.5rem", 
+                    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
+                    position: "fixed", 
+                    top: "-5px",        
+                    left: "50%",         
+                    transform: "translateX(-50%)",
+                    zIndex: 10          
+            }}>
+                Log History
+            </h1>
+
+            {/* --- CENTER RECTANGLE --- */}
+            <div
+                style={{
+                    position: "fixed", 
+                    top: "46%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "1100px",
+                    height: "555px",
+                    backgroundColor: "transparent",
+                    border: "transparent",
+                    borderRadius: "12px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 5,             
+                }}
+            >
+                {/* Scrollable inner rectangle with tightly stacked images */}
+                <div
+                style={{
+                    width: "98%",
+                    height: "425px",          
+                    backgroundColor: "transparent", 
+                    borderRadius: "8px",
+                    overflowY: "auto",       
+                    padding: "10px",
+                    boxSizing: "border-box",
+                    display: "flex",
+                    flexDirection: "column", 
+                    alignItems: "center",
+                }}
+                >
+                {[...Array(12)].map((_, i) => (
+                    <img
+                    key={i}
+                    src="/images/skinnylog.png"
+                    alt={`Log ${i + 1}`}
+                    style={{
+                        display: "block",
+                        height: "250px",          
+                        marginBottom: "-100px",
+                    }}
+                    />
+                ))}
+                </div>
+            </div>
+
+
+
             <img 
             src="/images/featherHome.png"
             width={100}
