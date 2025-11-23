@@ -23,6 +23,29 @@ import path from "path";
 import * as faceapi from "face-api.js";
 import { Canvas, Image, ImageData, loadImage } from "canvas";
 
+import PDFDocument from "pdfkit"; 
+
+const FEEDBACK_LOG_PATH = "./temp/feedback-log.json"; // want to store all feedback into a temp json file
+
+if (!fs.existsSync("./temp")) fs.mkdirSync("./temp");
+if (!fs.existsSync(FEEDBACK_LOG_PATH))
+  fs.writeFileSync(FEEDBACK_LOG_PATH, "[]");
+
+// helper function to append contents to temp json file
+function appendFeedback(type, text) {
+  try {
+    const current = JSON.parse(fs.readFileSync(FEEDBACK_LOG_PATH, "utf8"));
+    current.push({
+      type,
+      text,
+      timestamp: new Date().toISOString(),
+    });
+    fs.writeFileSync(FEEDBACK_LOG_PATH, JSON.stringify(current, null, 2));
+  } catch (e) {
+    console.error("Error logging feedback:", e);
+  }
+}
+
 // for video uploads
 import uploadFullVideoRoutes from "./routes/uploadFullVideo.js";
 import Video from "./models/Video.js";
@@ -220,6 +243,9 @@ Feedback: Focus on pacing, slowing it down and use your breath to capture the au
 
     console.log("feedback on speech: ", text);
 
+    // append audio feedback to temp json file 
+    appendFeedback("audio", text);
+
     res.json({ feedback: text });
   } catch (err) {
     console.error("Error in /process-audio:", err);
@@ -387,6 +413,9 @@ Now, generate 1–2 actionable feedback cues strictly based on the above express
     // for testing
     console.log("feedback on facial expression: ", text.trim());
 
+    // append feedback on video to temp json file 
+    appendFeedback("video", text.trim())
+
     // send only feedback in the response
     res.json({
       feedback: text.trim(),
@@ -443,6 +472,98 @@ app.get("/user-videos/:userId", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Could not fetch videos" });
+  }
+});
+
+// create pdf
+app.post("/create-pdf", async (req, res) => {
+  try {
+    // load all feedback stored in temp json file
+    const logs = JSON.parse(fs.readFileSync(FEEDBACK_LOG_PATH, "utf8"));
+
+    // handle no feedback
+    if (logs.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "No feedback available to summarize." });
+    }
+
+    // create summary, append to pdf
+    const allFeedbackText = logs.map((f) => `(${f.type}) ${f.text}`).join("\n");
+
+    const summaryPrompt = `
+Summarize the following presentation feedback into clear bullet points.
+Then provide a short overall performance summary. Here is the data:
+
+${allFeedbackText}
+`;
+
+    console.log("all feedback: ", summaryPrompt); // for debugging
+
+    const summaryResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          parts: [{ text: summaryPrompt }],
+        },
+      ],
+    });
+
+    let summaryText =
+      summaryResponse.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Summary unavailable.";
+
+    summaryText = summaryText.replace(/\*\*/g, "");
+
+    console.log("summary generated: ", summaryText); // for debugging
+
+    const pdfName = `presentation-feedback-${Date.now()}.pdf`;
+    const pdfPath = `./temp/${pdfName}`;
+
+    const doc = new PDFDocument({ margin: 40 });
+    const stream = fs.createWriteStream(pdfPath);
+    doc.pipe(stream);
+
+    doc.fontSize(22).text("Presentation Feedback Report", { align: "center" });
+    doc.moveDown();
+
+    doc.fontSize(12).text(`Generated: ${new Date().toLocaleString()}`);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Overall Summary");
+    doc.fontSize(12).text(summaryText);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Detailed Feedback Log");
+    doc.moveDown();
+
+    logs.forEach((f) => {
+      doc
+        .fontSize(12)
+        .text(
+          `• [${f.type.toUpperCase()}] (${new Date(
+            f.timestamp
+          ).toLocaleTimeString()}) ${f.text}`
+        );
+      doc.moveDown(0.3);
+    });
+
+    doc.end();
+
+    // When finished writing, send file
+    stream.on("finish", () => {
+      res.download(pdfPath, pdfName, (err) => {
+        if (err) {
+          console.error(err);
+        }
+
+        // clear logs after export
+        fs.writeFileSync(FEEDBACK_LOG_PATH, "[]");
+      });
+    });
+  } catch (err) {
+    console.error("Error in /create-pdf:", err);
+    res.status(500).json({ error: "Failed to generate PDF" });
   }
 });
 
