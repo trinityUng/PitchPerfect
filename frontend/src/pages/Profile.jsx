@@ -80,6 +80,7 @@ const Profile = () => {
           alignItems: "center",
           gap: "6px",
           fontSize: "18px",
+          color: "#1E406E",
         }}
       >
         <svg
@@ -165,13 +166,7 @@ const Profile = () => {
             flexDirection: "column",
             gap: "18px",
           }}
-        //   style={{
-        //     textAlign: "left",
-        //     display: "flex",
-        //     flexDirection: "column",
-        //     gap: "18px",
-        //     margin: "0 auto",
-        //   }}
+
         >
           {/* USERNAME */}
           <div>

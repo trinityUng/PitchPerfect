@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
     { src: "/images/featherHome.png", alt: "Home", route: "/" },
     { src: "/images/nestUser.png", alt: "User", route: "/user" },
     { src: "/images/pawHistory.png", alt: "History", route: "/history" },
-    // { src: "/images/binoExport.png", alt: "Export", route: "/" },
+    { src: "/images/present.png", alt: "Present", route: "/present" },
   ];
 
   return (
