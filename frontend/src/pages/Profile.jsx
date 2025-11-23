@@ -46,7 +46,7 @@ const Profile = () => {
       }
 
       alert("Signup successful!");
-      navigate("/present");
+      navigate("/login");
     } catch (err) {
       console.error(err);
       alert("Error connecting to server");

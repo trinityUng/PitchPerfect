@@ -135,7 +135,10 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Incorrect password." });
     }
 
-    res.json({ message: "Login successful", userId: user._id });
+    //localStorage.setItem("userId", data.userId);
+    //localStorage.setItem("username", data.username);
+
+    res.json({ message: "Login successful", userId: user._id , username: user.username});
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
