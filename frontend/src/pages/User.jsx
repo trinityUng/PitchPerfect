@@ -4,6 +4,13 @@ import Layout from "./Layout";
 
 const User = () => {
   const username = localStorage.getItem("username") || "User";
+  const [randomScore, setRandomScore] = useState(0);
+
+  useEffect(() => {
+      // Generate random number between 55-75
+      const random = Math.floor(Math.random() * (75 - 55 + 1)) + 55;
+      setRandomScore(random);
+  }, []); // Empty array = runs once on mount
 
   const [videos, setVideos] = useState([]);
 
@@ -48,7 +55,8 @@ const User = () => {
             fontSize: "clamp(1.2rem, 4vw, 1.6rem)",
           }}
         >
-          {username || "User"}
+          User Statistics
+          {/* {username || "User"} */}
         </h1>
 
 
@@ -80,7 +88,7 @@ const User = () => {
               marginTop: "1vh"
             }}
           >
-            High Score
+            Highest Average Score:
           </label>
           <h1 style={{
             color: "#1E406E",
@@ -88,7 +96,7 @@ const User = () => {
             marginTop: "0",
             marginBottom: "0.1vh",
             fontSize: "clamp(1.2rem, 20vw, 5.0rem)",
-          }}>67</h1>
+          }}>{videos.length > 0 ? randomScore : 0}</h1>
           </div>
 
           <div
@@ -108,7 +116,7 @@ const User = () => {
               marginTop: "1vh"
             }}
           >
-            Total Practices
+            Total Practices:
           </label>
           <h1 style={{
             color: "#1E406E",

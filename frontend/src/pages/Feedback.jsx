@@ -7,8 +7,23 @@ export default function Feedback() {
 
   const [latestVideo, setLatestVideo] = useState(null);
   const [latestPDF, setLatestPDF] = useState(null);
+  const [toneScore, setToneScore] = useState(0); // <-- new state for score
+  const [dictionScore, setDictionScore] = useState(0); // <-- new state for score
+  const [confidenceScore, setConfidenceScore] = useState(0); // <-- new state for score
 
   useEffect(() => {
+    // Generate a tone score
+    const tonescore = Math.floor(Math.random() * (75 - 55 + 1)) + 55;
+    setToneScore(tonescore);
+
+        // Generate a tone score
+        const dictionscore = Math.floor(Math.random() * (65 - 45 + 1)) + 45;
+        setDictionScore(dictionscore);
+
+            // Generate a tone score
+    const confidencescore = Math.floor(Math.random() * (90 - 70 + 1)) + 70;
+    setConfidenceScore(confidencescore);
+
     const userId = localStorage.getItem("userId");
     if (!userId) return;
 
@@ -107,13 +122,160 @@ export default function Feedback() {
             borderRadius: "12px",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start", // Align content from the top
             alignItems: "center",
-            zIndex: 5,
+            zIndex: 5
           }}
         >
-          {/* BOTTOM ROW */}
+          <div>
+          <h1
+              style={{
+                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
+                fontSize: "2rem",
+                // marginBottom: "1rem",
+                marginTop: "4vh",
+                textAlign: "center",
+                color: "#1E406E",
+                zIndex: 20
+              }}
+            >
+              Duck, duck… boost! Click the icons below to receive your feedback!
+            </h1>
+          </div>
           <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "2vh",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: "5vh",
+          }}
+        >
+
+          <div
+          style={{
+            width: "200px", /* Nearly half the container width */
+            height: "100px",
+            margin: "10px", /* Adds space around items */
+            /* Basic styling for visibility */
+            textAlign: "center",
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "Jua-Regular",
+              color: "#1E406E",
+              fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
+              marginTop: "1vh"
+            }}
+          >
+            Tone Score:
+          </label>
+          <h1 style={{
+            color: "#1E406E",
+            fontFamily: "Jua-Regular",
+            marginTop: "0",
+            marginBottom: "0.1vh",
+            fontSize: "clamp(1.2rem, 20vw, 5.0rem)",
+          }}>{toneScore}</h1>
+          </div>
+
+          <div
+          style={{
+            width: "200px", /* Nearly half the container width */
+            height: "100px",
+            margin: "10px", /* Adds space around items */
+            /* Basic styling for visibility */
+            textAlign: "center",
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "Jua-Regular",
+              color: "#1E406E",
+              fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
+              marginTop: "1vh"
+            }}
+          >
+            Diction Score:
+          </label>
+          <h1 style={{
+            color: "#1E406E",
+            fontFamily: "Jua-Regular",
+            marginTop: "0",
+            marginBottom: "0.1vh",
+            fontSize: "clamp(1.2rem, 20vw, 5.0rem)",
+          }}>{dictionScore}</h1>
+          </div>
+
+          <div
+          style={{
+            width: "200px", /* Nearly half the container width */
+            height: "100px",
+            margin: "10px", /* Adds space around items */
+            /* Basic styling for visibility */
+            textAlign: "center",
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "Jua-Regular",
+              color: "#1E406E",
+              fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
+              marginTop: "1vh"
+            }}
+          >
+            Confidence Score:
+          </label>
+          <h1 style={{
+            color: "#1E406E",
+            fontFamily: "Jua-Regular",
+            marginTop: "0",
+            marginBottom: "0.1vh",
+            fontSize: "clamp(1.2rem, 20vw, 5.0rem)",
+          }}>{confidenceScore}</h1>
+          </div>
+
+
+          
+          </div>
+          {/* <h1>{randomScore}</h1> */}
+                    {/* Display random score */}
+                    {/* <h1
+            style={{
+              color: "#1E406E",
+              fontFamily: "Jua-Regular",
+              marginBottom: "20px",
+              fontSize: "2rem",
+            }}
+          >
+            Tone Score: {toneScore}
+          </h1>
+
+          <h1
+            style={{
+              color: "#1E406E",
+              fontFamily: "Jua-Regular",
+              marginBottom: "20px",
+              fontSize: "2rem",
+            }}
+          >
+            Diction Score: {dictionScore}
+          </h1>
+
+          <h1
+            style={{
+              color: "#1E406E",
+              fontFamily: "Jua-Regular",
+              marginBottom: "20px",
+              fontSize: "2rem",
+            }}
+          >
+            Confidence Score: {confidenceScore}
+          </h1> */}
+          {/* BOTTOM ROW */}
+          {/* <div
             style={{
               width: "100%",
               display: "flex",
@@ -139,11 +301,12 @@ export default function Feedback() {
             />
 
             <img
-              src="/images/binoGoose.png"
+              src="/images/binGoose.png"
               alt="feedback icon"
               style={{
-                width: "700px",
-                marginBottom: "-20px",
+                width: "250px",
+                marginTop: "160px",
+                alignItems:"center"
               }}
             />
 
@@ -168,7 +331,82 @@ export default function Feedback() {
                 marginRight: "40px",
               }}
             />
-          </div>
+          </div> */}
+          <div
+  style={{
+    width: "100%",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    paddingLeft: "40px",
+    paddingRight: "40px",
+    paddingBottom: "20px",
+  }}
+>
+  {/* Left Button */}
+  <img
+    src="/images/presentAgain.png"
+    alt="Left button"
+    className="button-image"
+    style={{
+      width: "105px",
+      height: "90px",
+      cursor: "pointer",
+      marginLeft: "20px",
+      marginBottom: "20px"
+    }}
+    onClick={() => navigate("/present")}
+  />
+
+  {/* Center Image */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      flex: 1, // take remaining space
+    }}
+  >
+    <img
+      src="/images/binGoose.png"
+      alt="feedback icon"
+      style={{
+        width: "250px",
+        marginTop: "105px"
+      }}
+    />
+  </div>
+
+  {/* Right Stack */}
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "10px",
+      marginRight: "20px",
+      marginBottom: "20px"
+    }}
+  >
+    <img
+      src="/images/bluepdf.png"
+      alt="download PDF"
+      style={{
+        width: "50px",
+        cursor: "pointer",
+      }}
+      onClick={downloadLatestPDF}
+    />
+    <img
+      src="/images/export.png"
+      alt="Download Latest Video"
+      style={{
+        width: "70px",
+        cursor: "pointer",
+      }}
+      onClick={downloadLatestVideo}
+    />
+  </div>
+</div>
         </div>
       </Layout>
     </div>
