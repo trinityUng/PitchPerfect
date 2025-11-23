@@ -78,9 +78,14 @@ export default function Present() {
     fullVideoRecorderRef.current = fullVideoRecorder;
 
     fullVideoRecorder.ondataavailable = (e) => fullVideoChunks.push(e.data);
-    fullVideoRecorder.onstop = () => {
+    fullVideoRecorder.onstop = async () => {
       const blob = new Blob(fullVideoChunks, { type: "video/webm" });
+
+      // Create preview for download (optional)
       setFullVideoURL(URL.createObjectURL(blob));
+
+      // Upload to backend
+      await uploadFullVideo(blob);
     };
     fullVideoRecorder.start();
 
@@ -153,17 +158,24 @@ export default function Present() {
   };
 
   /* STOP RECORDING */
-  const stopRecording = () => {
-    recordingFlagRef.current = false;
-    setIsRecordingState(false);
+      const stopRecording = async () => {
+      recordingFlagRef.current = false;
+      setIsRecordingState(false);
 
-    exitFullscreen();
+      exitFullscreen();
 
-    fullVideoRecorderRef.current?.stop();
-    fullAudioRecorderRef.current?.stop();
-    loopAudioRecorderRef.current?.stop();
-    loopVideoRecorderRef.current?.stop();
-  };
+      fullVideoRecorderRef.current?.stop();
+      fullAudioRecorderRef.current?.stop();
+      loopAudioRecorderRef.current?.stop();
+      loopVideoRecorderRef.current?.stop();
+
+      // wait a bit for uploadFullVideo() to run
+      setTimeout(() => {
+        navigate("/feedback");
+      }, 500);
+    };
+
+
 
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
@@ -264,6 +276,28 @@ export default function Present() {
     }, 8000);
   };
 
+  const uploadFullVideo = async (blob) => {
+  const userId = localStorage.getItem("userId"); 
+  // make sure you save userId in localStorage during login
+
+  const form = new FormData();
+  form.append("video", blob, "recording.webm");
+  form.append("userId", userId);
+
+  try {
+    const res = await fetch("http://localhost:5050/upload-full-video", {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await res.json();
+    console.log("UPLOAD RESULT:", data);
+  } catch (err) {
+    console.error("Failed to upload full video:", err);
+  }
+};
+
+
   useEffect(() => {
     startCamera();
   }, []);
@@ -312,7 +346,7 @@ export default function Present() {
         playsInline
         muted
         style={{
-          width: isFullscreenMode ? "100vw" : "47vw",
+          width: isFullscreenMode ? "100vw" : "52vw",
           height: isFullscreenMode ? "100vh" : "auto",
           objectFit: isFullscreenMode ? "cover" : "contain",
           borderRadius: isFullscreenMode ? "0px" : "20px",
@@ -321,7 +355,7 @@ export default function Present() {
             : "translate(-50%, -50%) scaleX(-1)",
           background: "black",
           position: isFullscreenMode ? "relative" : "absolute",
-          top: isFullscreenMode ? "0" : "42%",
+          top: isFullscreenMode ? "0" : "45%",
           left: isFullscreenMode ? "0" : "50%",
           display: "block",
         }}

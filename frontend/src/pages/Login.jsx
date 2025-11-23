@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Start from "./Start";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,59 +17,52 @@ const Login = () => {
     });
   };
 
-  // ---- SIGNUP SUBMIT FUNCTION ----
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // sanity check, make sure both fields are filled
-    if (!formData.username || !formData.password) {
-      alert("Missing fields.");
+  if (!formData.username || !formData.password) {
+    alert("Missing fields.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5050/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.username,
+        password: formData.password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.error === "Incorrect password.") {
+        alert("Incorrect password.");
+        setFormData({ ...formData, password: "" });
+      } else {
+        alert("Failed to login.");
+        setFormData({ username: "", password: "" });
+      }
       return;
     }
 
-    try {
-      const res = await fetch("http://localhost:5050/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-        }),
-      });
+    // ⭐⭐⭐ STORE USER ID **HERE**
+    localStorage.setItem("userId", data.userId);
 
-      const data = await res.json();
+    alert("Login successful!");
+    navigate("/present");
 
-      if (!res.ok) {
-        console.log(data.error);
+  } catch (err) {
+    console.error(err);
+    alert("Error connecting to server");
+  }
+};
 
-        if (data.error === "Incorrect password.") {
-          alert("Incorrect password.");
-          setFormData({
-            password: "",
-          });
-        } else {
-          alert("Failed to login.");
-          setFormData({
-            username: "",
-            password: "",
-          });
-        }
-
-        return;
-      }
-
-      alert("Login successful!");
-      navigate("/present");
-    } catch (err) {
-      console.error(err);
-      alert("Error connecting to server");
-    }
-  };
-
-  // ---- INPUT STYLE ----
   const inputStyle = {
     width: "100%",
-    padding: "10px 14px",
+    padding: "4px 4px",
     marginTop: "4px",
     background: "#EFF3FF",
     border: "none",
@@ -79,80 +73,76 @@ const Login = () => {
     fontFamily: "Jua-Regular",
   };
 
+  // const ArrowRight = () => (
+  //   <svg
+  //     width="24"
+  //     height="24"
+  //     viewBox="0 0 24 24"
+  //     fill="none"
+  //     stroke="currentColor"
+  //     strokeWidth="2"
+  //     strokeLinecap="round"
+  //     strokeLinejoin="round"
+  //   >
+  //     <line x1="5" y1="12" x2="19" y2="12" />
+  //     <polyline points="12 5 19 12 12 19" />
+  //   </svg>
+  // );
+
+  const BackButton = () => {
+    const goBack = () => window.history.back();
+  
+    return (
+      <div
+        onClick={goBack}
+        style={{
+          cursor: "pointer",
+          padding: "2px",
+          left: "2px",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          fontSize: "18px",
+        }}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <label style={{ fontFamily: "Jua-Regular", color: "#1E406E", cursor: "pointer"}}>
+              Back
+            </label>
+      </div>
+    );
+  };
+
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100vw",
-        minHeight: "100vh", // <-- FIXED
-        overflow: "visible", // <-- FIXED
-      }}
-    >
-      {/* ---- SIDE DECOR IMAGES ---- */}
-      <img
-        src="/images/pinkWeed.png"
-        width={430}
-        style={{
-          position: "absolute",
-          left: -80,
-          bottom: -20,
-          zIndex: 0,
-        }}
-      />
-
-      <img
-        src="/images/brownWeed.png"
-        width={430}
-        style={{
-          position: "absolute",
-          right: -90,
-          bottom: -60,
-          zIndex: 0,
-        }}
-      />
-
-      {/* --- LOGO TOP LEFT --- */}
-      <img
-        src="/images/logo.png"
-        width={95}
-        style={{
-          position: "absolute",
-          top: 20,
-          left: 20,
-          zIndex: 3,
-        }}
-      />
-
-      {/* --- BOTTOM LOG IMAGE (FIXED z-index!!) --- */}
-      <img
-        src="/images/log.png"
-        width={950}
-        style={{
-          position: "absolute",
-          bottom: -55,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 0, // <<< FIXED — no longer blocks yellow box
-        }}
-      />
-
-      {/* ---- SIGN-UP CARD ---- */}
+    <Start>
       <div
         style={{
-          transform: "scale(0.9)", // shrink the whole card
-          transformOrigin: "top center", // shrink downward from the top
+          transform: "translate(-50%, -50%) scale(0.9)",       // center and shrink the whole card
+          transformOrigin: "center center",
           width: "700px",
-          margin: "60px auto 130px auto",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
           background: "#FFFDEB",
           padding: "15px 20px",
           borderRadius: "24px",
           boxShadow: "0 6px 18px rgba(0,0,0,0.15)",
-          position: "relative",
           zIndex: 10,
           textAlign: "center",
         }}
       >
-        {/* Profile icon */}
+        <BackButton/>
         <img
           src="/images/portrait.png"
           width={75}
@@ -162,18 +152,24 @@ const Login = () => {
 
         <h1
           style={{
-            color: "black",
+            color: "#1E406E",
             fontFamily: "Jua-Regular",
             marginBottom: "20px",
             fontSize: "1.6rem",
           }}
         >
-          Sign Up
+          Login
         </h1>
 
         <form
           onSubmit={handleSubmit}
           style={{
+            // textAlign: "left",
+            // display: "flex",
+            // flexDirection: "column",
+            // gap: "18px",
+            // margin: "0 auto",
+
             width: "100%",
             maxWidth: "500px",
             margin: "0 auto",
@@ -182,10 +178,11 @@ const Login = () => {
             flexDirection: "column",
             gap: "18px",
           }}
+          
         >
           {/* USERNAME */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Username
             </label>
             <input
@@ -199,7 +196,7 @@ const Login = () => {
 
           {/* PASSWORD */}
           <div>
-            <label style={{ fontFamily: "Jua-Regular", color: "black" }}>
+            <label style={{ fontFamily: "Jua-Regular", color: "#1E406E" }}>
               Password
             </label>
             <input
@@ -211,7 +208,7 @@ const Login = () => {
             />
           </div>
 
-          {/* SUBMIT BUTTON */}
+          {/* SUBMIT */}
           <button
             type="submit"
             style={{
@@ -225,51 +222,14 @@ const Login = () => {
               fontFamily: "Jua-Regular",
               cursor: "pointer",
               marginTop: "10px",
+              marginBottom: "10px"
             }}
           >
-            Sign Up
+            Login
           </button>
         </form>
       </div>
-
-      {/* ---- FLOATING BOTTOM NAV ---- */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 5,
-          display: "flex",
-          gap: "60px",
-        }}
-      >
-        <img
-          src="/images/featherHome.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/")}
-        />
-        <img
-          src="/images/nestProfile.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/profile")}
-        />
-        <img
-          src="/images/pawHistory.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/history")}
-        />
-        <img
-          src="/images/binoExport.png"
-          width={90}
-          className="button-image"
-          onClick={() => navigate("/")}
-        />
-      </div>
-    </div>
+    </Start>
   );
 };
 
