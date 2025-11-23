@@ -1,13 +1,22 @@
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 function App() {
+  const gooseSoundRef = useRef(null);
   const navigate = useNavigate();
+
+  const playGooseSound = () => {
+    if (gooseSoundRef.current) {
+      gooseSoundRef.current.currentTime = 0; // start from beginning
+      gooseSoundRef.current.play();
+    }
+  };
 
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
 
-      {/* Continuous Goose Sound */}
-      <audio src="/images/goosesound.mp3" autoPlay loop />
+      {/* Goose Sound */}
+      <audio ref={gooseSoundRef} src="/images/goosesound.mp3" />
 
       {/* Top-left image */}
       <img
@@ -61,8 +70,9 @@ function App() {
           width: "350px",
           height: "auto",
           zIndex: -1,
-          pointerEvents: "none",
+          cursor: "pointer",
         }}
+        onClick={playGooseSound}
       />
 
       {/* Center content */}
@@ -84,7 +94,7 @@ function App() {
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)",
           }}
         >
-          Welcome!
+          Pitch Perfect
         </h1>
 
         <div style={{ display: "flex", gap: "3rem", marginTop: "-7rem" }}>
