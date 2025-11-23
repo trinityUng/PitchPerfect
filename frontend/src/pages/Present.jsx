@@ -65,6 +65,22 @@ export default function Present() {
     recordingFlagRef.current = true;
     setIsRecordingState(true);
 
+    // load initial goose 
+    const welcomeGoose = "/images/Appreciative.png";
+    const welcomeBubble = "/images/speech.png";
+    const welcomeText =
+      "Smile, you're on camera! You'll receive feedback throughout your presentation.";
+
+    setToneImage(welcomeGoose);
+    setSpeechBubble(welcomeBubble);
+    setSpeechText(welcomeText);
+
+    const timer = setTimeout(() => {
+      setToneImage(null);
+      setSpeechBubble(null);
+      setSpeechText("");
+    }, 8000);
+    
     const stream = streamRef.current;
     const audioTrack = stream.getAudioTracks()[0];
     const videoTrack = stream.getVideoTracks()[0];
