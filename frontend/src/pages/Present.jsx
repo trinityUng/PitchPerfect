@@ -187,7 +187,6 @@ export default function Present() {
 
   /* STOP RECORDING */
   const stopRecording = async () => {
-
     // hide the goose button immediately, no flash
     setHideGooseButton(true);
 
@@ -208,8 +207,30 @@ export default function Present() {
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
-      videoRef.current.srcObject = null;   
+      videoRef.current.srcObject = null;
       streamRef.current = null;
+    }
+
+    // save pdf
+    try {
+      const userId = localStorage.getItem("userId");
+      console.log("user id retrieved: ", userId);
+
+      const res = await fetch("http://localhost:5050/generate-and-save-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        console.log("PDF saved to DB:", data.pdf);
+      } else {
+        console.error("PDF save error:", data.error);
+      }
+    } catch (err) {
+      console.error("Auto-PDF error:", err);
     }
 
     // wait a bit for uploadFullVideo() to run
@@ -405,16 +426,16 @@ export default function Present() {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 9999,
-          display: "flex", 
+          display: "flex",
           gap: "10px",
           alignItems: "center",
         }}
       >
         {!isRecordingState && !hideGooseButton && (
-          <img 
-            src="/images/speakGoose.png" 
-            style={{ width: "50vw" }} 
-            onClick={startRecording} 
+          <img
+            src="/images/speakGoose.png"
+            style={{ width: "50vw" }}
+            onClick={startRecording}
           />
         )}
 
@@ -424,19 +445,18 @@ export default function Present() {
           </button>
         )}
 
-                {/* GOOSE TOGGLE BUTTON */}
-                {isRecordingState && (
-                  
-                  <button
-                    onClick={() => setShowGoose(!showGoose)}
-                    style={{
-                      ...styles.btn,
-                      background: showGoose ? "#1E406E" : "#ccc",
-                      fontSize: "0.9rem",
-                    }}
-                    title={showGoose ? "Hide Goose" : "Show Goose"}
-                  >
-                    {showGoose ? "🦢 Hide Goose" : "🦢 Show Goose"}
+        {/* GOOSE TOGGLE BUTTON */}
+        {isRecordingState && (
+          <button
+            onClick={() => setShowGoose(!showGoose)}
+            style={{
+              ...styles.btn,
+              background: showGoose ? "#1E406E" : "#ccc",
+              fontSize: "0.9rem",
+            }}
+            title={showGoose ? "Hide Goose" : "Show Goose"}
+          >
+            {showGoose ? "🦢 Hide Goose" : "🦢 Show Goose"}
           </button>
         )}
       </div>
@@ -454,19 +474,19 @@ export default function Present() {
       {/* VIDEO (normal size OR fullscreen) */}
       <video
         ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          style={{
-            display: isFullscreenMode ? "block" : "none",
-            width: "100vw",
-            height: "100vh",
-            objectFit: "cover",
-            transform: "scaleX(-1)",
-            background: "none",
-            position: "relative",
-            top: "0",
-          }}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          display: isFullscreenMode ? "block" : "none",
+          width: "100vw",
+          height: "100vh",
+          objectFit: "cover",
+          transform: "scaleX(-1)",
+          background: "none",
+          position: "relative",
+          top: "0",
+        }}
       />
 
       {/* DOWNLOAD LINKS (always clickable) */}

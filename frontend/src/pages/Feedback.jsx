@@ -6,21 +6,32 @@ export default function Feedback() {
   const navigate = useNavigate();
 
   const [latestVideo, setLatestVideo] = useState(null);
+  const [latestPDF, setLatestPDF] = useState(null);
 
-    useEffect(() => {
+  useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
 
+    // Fetch newest video
     fetch(`http://localhost:5050/user-videos/${userId}`)
-        .then(res => res.json())
-        .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.videos && data.videos.length > 0) {
-            setLatestVideo(data.videos[0]); // newest video (sorted in backend)
+          setLatestVideo(data.videos[0]);
         }
-        })
-        .catch(err => console.error(err));
-    }, []);
+      })
+      .catch((err) => console.error(err));
 
+    // Fetch newest PDF
+    fetch(`http://localhost:5050/user-pdfs/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.pdfs && data.pdfs.length > 0) {
+          setLatestPDF(data.pdfs[0]); // newest PDF
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   const downloadLatestVideo = () => {
     if (!latestVideo) return;
@@ -34,11 +45,27 @@ export default function Feedback() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+  };
 
-};
+    const downloadLatestPDF = () => {
+    if (!latestPDF) {
+      console.error("No PDF found for this user");
+      return;
+    }
+
+    const filename = latestPDF.filePath.split("/").pop();
+    const downloadURL = `http://localhost:5050/download-pdf/${filename}`;
+
+    const a = document.createElement("a");
+    a.href = downloadURL;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
 
   // to create pdf
-  const downloadPDF = async () => {
+  /**const downloadPDF = async () => {
     try {
       const response = await fetch("http://localhost:5050/create-pdf", {
         method: "POST",
@@ -62,7 +89,7 @@ export default function Feedback() {
     } catch (err) {
       console.error("Error downloading PDF:", err);
     }
-  };
+  };**/
 
   return (
     <div>
@@ -153,6 +180,31 @@ export default function Feedback() {
                 />
             </div>
             </div>
+            />
+
+            <img
+              src="/images/bluepdf.png"
+              alt="download PDF"
+              style={{
+                width: "50px",
+                cursor: "pointer",
+                marginRight: "30px",
+              }}
+              onClick={downloadLatestPDF}
+            />
+
+            <img
+              src="/images/export.png"
+              alt="Download Latest Video"
+              onClick={downloadLatestVideo}
+              style={{
+                width: "70px",
+                cursor: "pointer",
+                marginRight: "40px",
+              }}
+            />
+          </div>
+        </div>
       </Layout>
     </div>
   );
