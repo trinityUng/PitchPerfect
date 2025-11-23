@@ -567,6 +567,24 @@ ${allFeedbackText}
   }
 });
 
+// DOWNLOAD ROUTE — forces file to download
+app.get("/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File not found" });
+  }
+
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      console.error("Download error:", err);
+      res.status(500).send("Error downloading file");
+    }
+  });
+});
+
+
 const PORT = 5050;
 app.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)

@@ -82,7 +82,8 @@ const History = () => {
 
           {videos.map((vid, index) => {
             const date = new Date(vid.createdAt).toLocaleString();
-            const downloadURL = `http://localhost:5050/${vid.filePath}`; // direct file link
+            const filename = vid.filePath.split("/").pop();
+            const downloadURL = `http://localhost:5050/download/${filename}`;
 
             return (
                 <div
@@ -124,27 +125,29 @@ const History = () => {
                 </div>
 
                 {/* DOWNLOAD ICON */}
-                <a
-                    href={downloadURL}
-                    download
-                    style={{
+                <img
+                src="/images/binoExport.png"
+                alt="Download Video"
+                onClick={() => {
+                const a = document.createElement("a");
+                a.href = downloadURL;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                }}
+                style={{
                     position: "absolute",
-                    right: "15%",          // moves it to right side of log
-                    top: "80%",            // aligns vertically with text
+                    right: "15%",
+                    top: "80%",
                     transform: "translateY(-50%)",
                     zIndex: 20,
-                    }}
-                >
-                    <img
-                    src="/images/binoExport.png"
-                    alt="Download Video"
-                    style={{
-                        width: "60px",
-                        height: "60px",
-                        cursor: "pointer",
-                    }}
-                    />
-                </a>
+                    width: "60px",
+                    height: "60px",
+                    cursor: "pointer",
+                }}
+                />
+
                 </div>
             );
             })}
