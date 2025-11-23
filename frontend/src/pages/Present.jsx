@@ -458,8 +458,8 @@ export default function Present() {
           alt="tone indicator"
           style={{
             position: "fixed",
-            bottom: "0px",
-            left: "-80px", // moving goose toward left edge
+            bottom: "-10px",
+            left: "-120px", // moving goose toward left edge
             width: "600px",
             height: "600px",
             objectFit: "contain",
