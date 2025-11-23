@@ -18,47 +18,47 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!formData.username || !formData.password) {
-    alert("Missing fields.");
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:5050/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: formData.username,
-        password: formData.password,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      if (data.error === "Incorrect password.") {
-        alert("Incorrect password.");
-        setFormData({ ...formData, password: "" });
-      } else {
-        alert("Failed to login.");
-        setFormData({ username: "", password: "" });
-      }
+    if (!formData.username || !formData.password) {
+      alert("Missing fields.");
       return;
     }
 
-    // ⭐⭐⭐ STORE USER ID **HERE**
-    localStorage.setItem("userId", data.userId);
+    try {
+      const res = await fetch("http://localhost:5050/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
 
-    alert("Login successful!");
-    navigate("/present");
+      const data = await res.json();
 
-  } catch (err) {
-    console.error(err);
-    alert("Error connecting to server");
-  }
-};
+      if (!res.ok) {
+        if (data.error === "Incorrect password.") {
+          alert("Incorrect password.");
+          setFormData({ ...formData, password: "" });
+        } else {
+          alert("Failed to login.");
+          setFormData({ username: "", password: "" });
+        }
+        return;
+      }
+
+      // ⭐⭐⭐ STORE USER ID **HERE**
+      console.log("user id stored: ", data.userId); // confirm storage
+      localStorage.setItem("userId", data.userId);
+
+      alert("Login successful!");
+      navigate("/present");
+    } catch (err) {
+      console.error(err);
+      alert("Error connecting to server");
+    }
+  };
 
   const inputStyle = {
     width: "100%",
@@ -73,10 +73,9 @@ const Login = () => {
     fontFamily: "Jua-Regular",
   };
 
-
   const BackButton = () => {
     const goBack = () => window.history.back();
-  
+
     return (
       <div
         onClick={goBack}
@@ -103,9 +102,15 @@ const Login = () => {
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        <label style={{ fontFamily: "Jua-Regular", color: "#1E406E", cursor: "pointer"}}>
-              Back
-            </label>
+        <label
+          style={{
+            fontFamily: "Jua-Regular",
+            color: "#1E406E",
+            cursor: "pointer",
+          }}
+        >
+          Back
+        </label>
       </div>
     );
   };
@@ -114,7 +119,7 @@ const Login = () => {
     <Start>
       <div
         style={{
-          transform: "translate(-50%, -50%) scale(0.9)",       // center and shrink the whole card
+          transform: "translate(-50%, -50%) scale(0.9)", // center and shrink the whole card
           transformOrigin: "center center",
           width: "700px",
           position: "absolute",
@@ -128,7 +133,7 @@ const Login = () => {
           textAlign: "center",
         }}
       >
-        <BackButton/>
+        <BackButton />
         <img
           src="/images/portrait.png"
           width={75}
@@ -164,7 +169,6 @@ const Login = () => {
             flexDirection: "column",
             gap: "18px",
           }}
-          
         >
           {/* USERNAME */}
           <div>
@@ -208,7 +212,7 @@ const Login = () => {
               fontFamily: "Jua-Regular",
               cursor: "pointer",
               marginTop: "10px",
-              marginBottom: "10px"
+              marginBottom: "10px",
             }}
           >
             Login
