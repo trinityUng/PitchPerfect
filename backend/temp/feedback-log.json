@@ -1,0 +1,72 @@
+[
+  {
+    "type": "audio",
+    "text": "It seems there's no spoken audio in the clip. Please provide an audio with speech for feedback.",
+    "timestamp": "2025-11-23T07:44:30.182Z"
+  },
+  {
+    "type": "audio",
+    "text": "Ensure you are audible and speak clearly. Reduce background noise for your presentation.",
+    "timestamp": "2025-11-23T07:44:30.186Z"
+  },
+  {
+    "type": "video",
+    "text": "- \"Incorporate more varied expressions; primarily neutral now.\"\n- \"A little more surprise could highlight key points better.\"",
+    "timestamp": "2025-11-23T07:44:37.878Z"
+  },
+  {
+    "type": "video",
+    "text": "- Reduce visible frustration; relax your brow and jaw.\n- Add some smiles to appear more approachable and engaging.",
+    "timestamp": "2025-11-23T07:44:38.560Z"
+  },
+  {
+    "type": "video",
+    "text": "- \"Add more expressive cues to connect with the audience.\"\n- \"Increase variation in facial expressions; be more reactive.\"",
+    "timestamp": "2025-11-23T07:44:49.360Z"
+  },
+  {
+    "type": "video",
+    "text": "- \"Incorporate more varied expressions; neutral is quite high.\"\n- \"Show more surprise to emphasize key points effectively.\"",
+    "timestamp": "2025-11-23T07:45:07.903Z"
+  },
+  {
+    "type": "audio",
+    "text": "Audio appears silent; no speech to analyze. Please provide a recording with your voice.",
+    "timestamp": "2025-11-23T07:50:12.678Z"
+  },
+  {
+    "type": "audio",
+    "text": "No discernible speech detected for analysis.",
+    "timestamp": "2025-11-23T07:50:20.829Z"
+  },
+  {
+    "type": "video",
+    "text": "- \"Incorporate more varied expressions to engage the audience.\"\n- \"Focus on more enthusiastic facial cues, such as smiling.\"",
+    "timestamp": "2025-11-23T07:50:27.779Z"
+  },
+  {
+    "type": "video",
+    "text": "Your neutral expression is very high; try to show more emotion. Add some smiles to connect better with the audience.",
+    "timestamp": "2025-11-23T07:50:28.559Z"
+  },
+  {
+    "type": "audio",
+    "text": "There is no speech detected in the audio provided, only background sounds and a chime. Please provide audio with speech for analysis.",
+    "timestamp": "2025-11-23T07:50:31.561Z"
+  },
+  {
+    "type": "audio",
+    "text": "No speech detected in the audio. Please provide an audio with spoken words for analysis.",
+    "timestamp": "2025-11-23T07:50:32.135Z"
+  },
+  {
+    "type": "video",
+    "text": "Your neutral expression is very high; try varying your delivery.\nIncorporate more smiles to increase audience engagement.",
+    "timestamp": "2025-11-23T07:51:00.204Z"
+  },
+  {
+    "type": "audio",
+    "text": "Reduce filler words like \"uh\" for a smoother, more confident flow.",
+    "timestamp": "2025-11-23T08:41:16.749Z"
+  }
+]
