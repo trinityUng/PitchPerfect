@@ -23,7 +23,7 @@ import path from "path";
 import * as faceapi from "face-api.js";
 import { Canvas, Image, ImageData, loadImage } from "canvas";
 
-import PDFDocument from "pdfkit"; 
+import PDFDocument from "pdfkit";
 
 const FEEDBACK_LOG_PATH = "./temp/feedback-log.json"; // want to store all feedback into a temp json file
 
@@ -49,8 +49,7 @@ function appendFeedback(type, text) {
 // for video uploads
 import uploadFullVideoRoutes from "./routes/uploadFullVideo.js";
 import Video from "./models/Video.js";
-
-
+import PDF from "./models/PDF.js";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -93,7 +92,6 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
 
 // register
 app.post("/register", async (req, res) => {
@@ -246,7 +244,7 @@ Feedback: Focus on pacing, slowing it down and use your breath to capture the au
 
     console.log("feedback on speech: ", text);
 
-    // append audio feedback to temp json file 
+    // append audio feedback to temp json file
     appendFeedback("audio", text);
 
     res.json({ feedback: text });
@@ -416,8 +414,8 @@ Now, generate 1–2 actionable feedback cues strictly based on the above express
     // for testing
     console.log("feedback on facial expression: ", text.trim());
 
-    // append feedback on video to temp json file 
-    appendFeedback("video", text.trim())
+    // append feedback on video to temp json file
+    appendFeedback("video", text.trim());
 
     // send only feedback in the response
     res.json({
@@ -458,24 +456,49 @@ app.post("/get-tone", async (req, res) => {
     console.log("prompt tone: ", text_response);
 
     res.json({ result: text_response });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
-}); 
+});
 
 // Get all videos for a user
 app.get("/user-videos/:userId", async (req, res) => {
   try {
-    const videos = await Video.find({ userId: req.params.userId })
-      .sort({ createdAt: -1 });
+    const videos = await Video.find({ userId: req.params.userId }).sort({
+      createdAt: -1,
+    });
 
     res.json({ videos });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Could not fetch videos" });
   }
+});
+
+// get pdfs for user
+app.get("/user-pdfs/:userId", async (req, res) => {
+  try {
+    const pdfs = await PDF.find({ userId: req.params.userId }).sort({
+      createdAt: -1,
+    });
+    res.json({ pdfs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not fetch PDFs" });
+  }
+});
+
+// download pdf
+app.get("/download-pdf/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(process.cwd(), "temp", filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "File not found" });
+  }
+
+  res.download(filePath);
 });
 
 // create pdf
@@ -570,6 +593,95 @@ ${allFeedbackText}
   }
 });
 
+// route to generate and save PDF
+app.post("/generate-and-save-pdf", async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    console.log("user id retrieved: ", userId);
+
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId" });
+    }
+
+    // Load logs
+    const logs = JSON.parse(fs.readFileSync(FEEDBACK_LOG_PATH, "utf8"));
+    if (logs.length === 0) {
+      return res.status(400).json({ error: "No feedback available" });
+    }
+
+    // Summarize feedback
+    const allFeedbackText = logs.map((f) => `(${f.type}) ${f.text}`).join("\n");
+
+    const summaryPrompt = `
+Summarize the following presentation feedback into clear bullet points.
+Then provide a short overall performance summary. Here is the data:
+
+${allFeedbackText}
+`;
+
+    const summaryResponse = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ parts: [{ text: summaryPrompt }] }],
+    });
+
+    let summaryText =
+      summaryResponse.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Summary unavailable.";
+
+    summaryText = summaryText.replace(/\*\*/g, "");
+
+    // Write PDF file
+    const pdfName = `presentation-feedback-${Date.now()}.pdf`;
+    const pdfPath = `./temp/${pdfName}`;
+
+    const doc = new PDFDocument({ margin: 40 });
+    const stream = fs.createWriteStream(pdfPath);
+    doc.pipe(stream);
+
+    doc.fontSize(22).text("Presentation Feedback Report", { align: "center" });
+    doc.moveDown();
+
+    doc.fontSize(12).text(`Generated: ${new Date().toLocaleString()}`);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Overall Summary");
+    doc.fontSize(12).text(summaryText);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Detailed Feedback Log");
+    doc.moveDown();
+
+    logs.forEach((f) => {
+      doc
+        .fontSize(12)
+        .text(
+          `• [${f.type.toUpperCase()}] (${new Date(
+            f.timestamp
+          ).toLocaleTimeString()}) ${f.text}`
+        );
+      doc.moveDown(0.3);
+    });
+
+    doc.end();
+
+    stream.on("finish", async () => {
+      // Save PDF record in MongoDB
+      const pdfRecord = await PDF.create({
+        userId,
+        filePath: pdfPath,
+      });
+
+      // Clear logs AFTER saving
+      fs.writeFileSync(FEEDBACK_LOG_PATH, "[]");
+
+      return res.json({ success: true, pdf: pdfRecord });
+    });
+  } catch (err) {
+    console.error("Error generating/saving PDF:", err);
+    res.status(500).json({ error: "PDF generation failed" });
+  }
+});
+
 // DOWNLOAD ROUTE — forces file to download
 app.get("/download/:filename", (req, res) => {
   const filename = req.params.filename;
@@ -586,7 +698,6 @@ app.get("/download/:filename", (req, res) => {
     }
   });
 });
-
 
 const PORT = 5050;
 app.listen(PORT, () =>
