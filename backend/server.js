@@ -192,7 +192,7 @@ app.post("/process-audio", upload.single("audio"), async (req, res) => {
       contents: createUserContent([
         createPartFromUri(uploaded.uri, mimeType),
         `
-You are a professional public speaking and presentation coach. You will analyze a student’s presentation based on their voice audio. Provide short and constructive feedback in fewer than 15 words. Provide sparse feedback, commenting only on points that need the most improvement.
+You are a professional public speaking and presentation coach. You will analyze a student’s presentation based on their voice audio. Provide short, kind, and constructive feedback in fewer than 15 words. Provide sparse feedback, commenting only on points that need the most improvement.
 
 Analyze the speaker’s voice in this audio and provide professional feedback on the following points:
 - Is their tone expressive or monotone? How and why should they improve their speaking tone?
