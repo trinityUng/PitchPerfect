@@ -6,7 +6,7 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const bottomNavItems = [
     { src: "/images/featherHome.png", alt: "Home", route: "/" },
-    { src: "/images/nestProfile.png", alt: "Profile", route: "/profile" },
+    { src: "/images/nestUser.png", alt: "User", route: "/user" },
     { src: "/images/pawHistory.png", alt: "History", route: "/history" },
     // { src: "/images/binoExport.png", alt: "Export", route: "/" },
   ];
@@ -45,7 +45,7 @@ const Layout = ({ children }) => {
 
                   <img 
            src="/images/flowers2.png" 
-           alt="Pink Weed" 
+           alt="Left Flowers" 
            style={{position: "fixed",
             bottom: "-4%",
             left: "-10%",
@@ -57,7 +57,7 @@ const Layout = ({ children }) => {
 
                   <img 
            src="/images/flowers1.png" 
-           alt="Brown Weed" 
+           alt="Right Flowers" 
            style={{position: "fixed",
             bottom: "-7%",
             right: "-10%",
@@ -80,6 +80,7 @@ const Layout = ({ children }) => {
                key={index}
                src={item.src}
                alt={item.alt}
+               className="button-image"
                style={{width: "4vw",
                 maxWidth: "100px",
                 minWidth: "30px",
@@ -89,17 +90,6 @@ const Layout = ({ children }) => {
              />
            ))}
          </div>
-         {/* <div style={{    maxWidth: "90%",
-    margin: "0 auto",
-    padding: "3vh 2vw",
-    background: "#fffdeb",
-    borderRadius: "2vw",
-    boxShadow: "0 1vh 3vh rgba(0, 0, 0, 0.2)",
-    position: "relative",
-    zIndex: 10,
-    minHeight: "60vh",}}>
-        
-      </div> */}
       {children}
 
     </div>

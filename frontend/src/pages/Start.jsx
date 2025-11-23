@@ -27,7 +27,7 @@ const Start = ({ children }) => {
 
                   <img 
            src="/images/flowers2.png" 
-           alt="Pink Weed" 
+           alt="Left Flowers" 
            style={{position: "fixed",
             bottom: "-4%",
             left: "-10%",
@@ -39,7 +39,7 @@ const Start = ({ children }) => {
 
                   <img 
            src="/images/flowers1.png" 
-           alt="Brown Weed" 
+           alt="Right Flowers" 
            style={{position: "fixed",
             bottom: "-7%",
             right: "-10%",
