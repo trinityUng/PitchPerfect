@@ -58,8 +58,10 @@ export default function Present() {
   };
 
   /* START RECORDING */
-  const startRecording = () => {
-    if (!streamRef.current) return;
+  const startRecording = async () => {
+    if (!streamRef.current){
+      await startCamera();
+    };
 
     enterFullscreen();
     recordingFlagRef.current = true;
@@ -190,6 +192,11 @@ export default function Present() {
     loopAudioRecorderRef.current?.stop();
     loopVideoRecorderRef.current?.stop();
 
+    if(streamRef.current){
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+
     // wait a bit for uploadFullVideo() to run
     setTimeout(() => {
       navigate("/feedback");
@@ -315,10 +322,6 @@ export default function Present() {
       console.error("Failed to upload full video:", err);
     }
   };
-
-  useEffect(() => {
-    startCamera();
-  }, []);
 
   return (
     // <Layout>
