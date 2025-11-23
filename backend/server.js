@@ -349,17 +349,31 @@ You are generating real-time presentation feedback based on facial expression da
 Expression averages (0 to 1):
 ${JSON.stringify(averages, null, 2)}
 
-Rules:
-- Output 1–2 short feedback cues.
-- Maximum 10 words each (should not be too long, the feedback will be displayed on screen, and should be quick to read).
-- No emojis.
-- Be direct.
-- Be clear in stating the presenter's current expression, and how this can be improved (e.g., "Your current expression is grumpy. Smile more to engage the audience.").
-- The feedback doesn't need to be overly positive (we want it to be evident that the user's current expression is being correctly identified).
-- Only give feedback based on the data.
-- Examples: "Smile more to stay engaging", "Relax your facial tension", "Use more expressive facial cues".
+Instructions:
+1. Generate 1–2 short feedback cues.
+2. Each cue must be 10 words or less.
+3. Focus on the intensity of each emotion and how it affects the presentation:
+   - neutral: too high = expressionless; suggest ways to add energy.
+   - happy: too low = appear less engaging; suggest smiling or enthusiasm.
+   - sad: too high = appear discouraged; suggest maintaining a confident expression.
+   - angry: too high = appear frustrated; suggest relaxing facial muscles.
+   - fearful: too high = appear nervous; suggest breathing and calmness.
+   - disgusted: too high = appear off-putting; suggest neutralizing expression.
+   - surprised: low or high = use appropriately; encourage natural reactions.
+4. Provide specific actionable advice for the presenter based on these cues.
+5. Be objective: do not invent emotions or exaggerate.
+6. Feedback should reflect the actual data and intensity levels.
+7. Be direct, concise, and easy to read quickly.
+8. Do not use emojis or any non-text symbols.
+9. Avoid generic or overly positive statements; focus on observable improvement.
 
-Now produce the cues:
+Examples of good feedback:
+- "Smile more to stay engaging."
+- "Relax facial tension to appear confident."
+- "Use more expressive cues to connect with audience."
+- "Maintain eye contact with camera"
+
+Now, generate 1–2 actionable feedback cues strictly based on the above expression data.
 `;
 
     // Query Gemini
