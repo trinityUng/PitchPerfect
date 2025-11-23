@@ -459,7 +459,7 @@ export default function Present() {
           style={{
             position: "fixed",
             bottom: "0px",
-            left: "-80px", // moving goose toward left edge
+            left: "-100px", // moving goose toward left edge
             width: "600px",
             height: "600px",
             objectFit: "contain",
