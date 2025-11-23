@@ -1,8 +1,37 @@
 import Layout from "./Layout.jsx";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Feedback() {
   const navigate = useNavigate();
+
+  // to create pdf
+  const downloadPDF = async () => {
+    try {
+      const response = await fetch("http://localhost:5050/create-pdf", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("PDF generation failed");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "presentation-feedback.pdf";
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+    }
+  };
+
   return (
     <div>
       <Layout>
@@ -37,14 +66,18 @@ export default function Feedback() {
               paddingBottom: "20px",
             }}
           >
-
-          <img
+            <img
               src="/images/presentAgain.png"
               alt="Left button"
               className="button-image"
-              style={{ width: "105px", height: "90px", cursor: "pointer", marginLeft: "25px" }}
+              style={{
+                width: "105px",
+                height: "90px",
+                cursor: "pointer",
+                marginLeft: "25px",
+              }}
               onClick={() => navigate("/present")}
-          />
+            />
 
             <img
               src="/images/binoGoose.png"
@@ -53,6 +86,17 @@ export default function Feedback() {
                 width: "700px",
                 marginBottom: "-20px",
               }}
+            />
+
+            <img
+              src="/images/bluepdf.png"
+              alt="download PDF"
+              style={{
+                width: "50px",
+                cursor: "pointer",
+                marginRight: "30px",
+              }}
+              onClick={downloadPDF}
             />
 
             <img
