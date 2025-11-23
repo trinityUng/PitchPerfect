@@ -34,6 +34,9 @@ export default function Feedback() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+
+};
+
   // to create pdf
   const downloadPDF = async () => {
     try {
@@ -129,13 +132,15 @@ export default function Feedback() {
             />
 
             <img
-              src="/images/export.png"
-              alt="right button"
-              style={{
+            src="/images/export.png"
+            alt="Download Latest Video"
+            onClick={downloadLatestVideo}
+            style={{
                 width: "70px",
                 cursor: "pointer",
                 marginRight: "40px",
             }}
+
             />
           </div>
         </div>
