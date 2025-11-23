@@ -18,43 +18,47 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!formData.username || !formData.password) {
-      alert("Missing fields.");
+  if (!formData.username || !formData.password) {
+    alert("Missing fields.");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5050/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.username,
+        password: formData.password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (data.error === "Incorrect password.") {
+        alert("Incorrect password.");
+        setFormData({ ...formData, password: "" });
+      } else {
+        alert("Failed to login.");
+        setFormData({ username: "", password: "" });
+      }
       return;
     }
 
-    try {
-      const res = await fetch("http://localhost:5050/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-        }),
-      });
+    // ⭐⭐⭐ STORE USER ID **HERE**
+    localStorage.setItem("userId", data.userId);
 
-      const data = await res.json();
+    alert("Login successful!");
+    navigate("/present");
 
-      if (!res.ok) {
-        if (data.error === "Incorrect password.") {
-          alert("Incorrect password.");
-          setFormData({ ...formData, password: "" });
-        } else {
-          alert("Failed to login.");
-          setFormData({ username: "", password: "" });
-        }
-        return;
-      }
-
-      alert("Login successful!");
-      navigate("/present");
-    } catch (err) {
-      console.error(err);
-      alert("Error connecting to server");
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Error connecting to server");
+  }
+};
 
   const inputStyle = {
     width: "100%",

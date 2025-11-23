@@ -74,9 +74,14 @@ export default function Present() {
     fullVideoRecorderRef.current = fullVideoRecorder;
 
     fullVideoRecorder.ondataavailable = (e) => fullVideoChunks.push(e.data);
-    fullVideoRecorder.onstop = () => {
+    fullVideoRecorder.onstop = async () => {
       const blob = new Blob(fullVideoChunks, { type: "video/webm" });
+
+      // Create preview for download (optional)
       setFullVideoURL(URL.createObjectURL(blob));
+
+      // Upload to backend
+      await uploadFullVideo(blob);
     };
     fullVideoRecorder.start();
 
@@ -149,7 +154,7 @@ export default function Present() {
   };
 
   /* STOP RECORDING */
-      const stopRecording = () => {
+      const stopRecording = async () => {
       recordingFlagRef.current = false;
       setIsRecordingState(false);
 
@@ -159,9 +164,13 @@ export default function Present() {
       fullAudioRecorderRef.current?.stop();
       loopAudioRecorderRef.current?.stop();
       loopVideoRecorderRef.current?.stop();
-      
-      navigate("/feedback");
+
+      // wait a bit for uploadFullVideo() to run
+      setTimeout(() => {
+        navigate("/feedback");
+      }, 500);
     };
+
 
 
   const sendAudioChunk = async (blob) => {
@@ -217,6 +226,28 @@ export default function Present() {
   a.click();
   a.remove();
 };
+
+  const uploadFullVideo = async (blob) => {
+  const userId = localStorage.getItem("userId"); 
+  // make sure you save userId in localStorage during login
+
+  const form = new FormData();
+  form.append("video", blob, "recording.webm");
+  form.append("userId", userId);
+
+  try {
+    const res = await fetch("http://localhost:5050/upload-full-video", {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await res.json();
+    console.log("UPLOAD RESULT:", data);
+  } catch (err) {
+    console.error("Failed to upload full video:", err);
+  }
+};
+
 
   useEffect(() => {
     startCamera();

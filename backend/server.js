@@ -23,6 +23,12 @@ import path from "path";
 import * as faceapi from "face-api.js";
 import { Canvas, Image, ImageData, loadImage } from "canvas";
 
+// for video uploads
+import uploadFullVideoRoutes from "./routes/uploadFullVideo.js";
+import Video from "./models/Video.js";
+
+
+
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
@@ -57,6 +63,14 @@ const ai = new GoogleGenAI({
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/", uploadFullVideoRoutes);
+
+// Correct static path
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // register
 app.post("/register", async (req, res) => {
@@ -98,7 +112,7 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Incorrect password." });
     }
 
-    res.json({ message: "Login successful" });
+    res.json({ message: "Login successful", userId: user._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
@@ -360,6 +374,19 @@ Now produce the cues:
   } catch (err) {
     console.error("Error in /video-feedback:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Get all videos for a user
+app.get("/user-videos/:userId", async (req, res) => {
+  try {
+    const videos = await Video.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 });
+
+    res.json({ videos });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not fetch videos" });
   }
 });
 
