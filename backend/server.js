@@ -386,13 +386,11 @@ Now produce the cues:
 app.post("/get-tone", async (req, res) => {
   try {
     const { prompt } = req.body;
-    //console.log("request received: ", prompt);
 
     const fprompt =
       "Classify the following feedback as one of the following: 'Appreciative', 'Evaluative', or 'Actionable' (in this exact format). Provide a one word answer, the answer should not be a sentence, or more than any one of these words alone. Note, appreciative feedback focuses on reinforcing behavior that was successful, evaluative feedback focuses on identifying areas where performance failed to meet a standard or expectation, and actionable feedback focuses on providing specific, actionable advice to close the gap identified by critical evaluative feedback. Here is the feedback for evaluation: " +
       prompt;
 
-    // add safety check to make sure prompt is in string format
     if (!prompt) {
       return res.status(400).json({ error: "incorrect prompt format" });
     }
@@ -414,9 +412,13 @@ app.post("/get-tone", async (req, res) => {
     console.log("prompt tone: ", text_response);
 
     res.json({ result: text_response });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
+  }
+}); 
+
 // Get all videos for a user
 app.get("/user-videos/:userId", async (req, res) => {
   try {
