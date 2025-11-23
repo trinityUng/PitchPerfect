@@ -207,11 +207,10 @@ Below are examples of transcribed audio and appropriate feedback.
 
 Example 1:
 Transcription: In terms of strategies, we should focus on things like energy resources instead of other things.
-Feedback: Try to use fewer filler words, such as “like” and more descriptive words instead of “things”.
-
+Feedback: Speak in a concise manner and avoid using "like", focus more on descriptive words!
 Example 2:
 Transcription: The universe is made of ten thousand planets and many more galaxies, proven to provide earth with appropriate gravitational pull so we need to invest in more space technology or else future generations will suffer from lack of technological advancements and live in a boring society.
-Feedback: You need to slow your pacing, use your breath to capture the audience’s engagement.
+Feedback: Focus on pacing, slowing it down and use your breath to capture the audience’s engagement.
 
         `,
       ]),
