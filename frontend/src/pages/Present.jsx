@@ -143,7 +143,7 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 20000);
+        setTimeout(() => loopAudioRecorder.stop(), 10000);
       }
     };
 
@@ -171,7 +171,7 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
-        setTimeout(() => loopVideoRecorder.stop(), 15000);
+        setTimeout(() => loopVideoRecorder.stop(), 20000);
       }
     };
 
