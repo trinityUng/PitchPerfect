@@ -22,6 +22,7 @@ export default function Present() {
   const [fullAudioURL, setFullAudioURL] = useState(null);
   const [fullVideoURL, setFullVideoURL] = useState(null);
 
+  const [showGoose, setShowGoose] = useState(true); // Toggle for goose stickers
   const [toneImage, setToneImage] = useState(null); // state for goose
   const [speechBubble, setSpeechBubble] = useState(null); // for speech bubble
   const [speechText, setSpeechText] = useState(""); // for speech bubble (text)
@@ -29,6 +30,9 @@ export default function Present() {
   // states used for queue structure
   const feedbackQueueRef = useRef([]); // stores queued feedback items
   const dispatcherRunningRef = useRef(false); // prevents multiple timers
+
+  // add to get rid of goose
+  const [hideGooseButton, setHideGooseButton] = useState(false);
 
   /* ENTER FULLSCREEN */
   const enterFullscreen = () => {
@@ -80,6 +84,8 @@ export default function Present() {
     setToneImage(welcomeGoose);
     setSpeechBubble(welcomeBubble);
     setSpeechText(welcomeText);
+
+    setHideGooseButton(false); // show speakGoose again next time
 
     const timer = setTimeout(() => {
       setToneImage(null);
@@ -181,6 +187,10 @@ export default function Present() {
 
   /* STOP RECORDING */
   const stopRecording = async () => {
+
+    // hide the goose button immediately, no flash
+    setHideGooseButton(true);
+
     recordingFlagRef.current = false;
     setIsRecordingState(false);
 
@@ -394,15 +404,38 @@ export default function Present() {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 9999,
+          display: "flex", 
+          gap: "10px",
+          alignItems: "center",
         }}
       >
-        {!isRecordingState ? (
-          <button style={styles.btn} onClick={startRecording}>
-            🎤 Start Recording
-          </button>
-        ) : (
+        {!isRecordingState && !hideGooseButton && (
+          <img 
+            src="/images/speakGoose.png" 
+            style={{ width: "50vw" }} 
+            onClick={startRecording} 
+          />
+        )}
+
+        {isRecordingState && (
           <button style={styles.stopBtn} onClick={stopRecording}>
             ⏹ Stop Recording
+          </button>
+        )}
+
+                {/* GOOSE TOGGLE BUTTON */}
+                {isRecordingState && (
+                  
+                  <button
+                    onClick={() => setShowGoose(!showGoose)}
+                    style={{
+                      ...styles.btn,
+                      background: showGoose ? "#1E406E" : "#ccc",
+                      fontSize: "0.9rem",
+                    }}
+                    title={showGoose ? "Hide Goose" : "Show Goose"}
+                  >
+                    {showGoose ? "🦢 Hide Goose" : "🦢 Show Goose"}
           </button>
         )}
       </div>
@@ -420,23 +453,19 @@ export default function Present() {
       {/* VIDEO (normal size OR fullscreen) */}
       <video
         ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{
-          width: isFullscreenMode ? "100vw" : "52vw",
-          height: isFullscreenMode ? "100vh" : "auto",
-          objectFit: isFullscreenMode ? "cover" : "contain",
-          borderRadius: isFullscreenMode ? "0px" : "20px",
-          transform: isFullscreenMode
-            ? "scaleX(-1)"
-            : "translate(-50%, -50%) scaleX(-1)",
-          background: "black",
-          position: isFullscreenMode ? "relative" : "absolute",
-          top: isFullscreenMode ? "0" : "45%",
-          left: isFullscreenMode ? "0" : "50%",
-          display: "block",
-        }}
+          autoPlay
+          playsInline
+          muted
+          style={{
+            display: isFullscreenMode ? "block" : "none",
+            width: "100vw",
+            height: "100vh",
+            objectFit: "cover",
+            transform: "scaleX(-1)",
+            background: "none",
+            position: "relative",
+            top: "0",
+          }}
       />
 
       {/* DOWNLOAD LINKS (always clickable) */}
@@ -473,7 +502,7 @@ export default function Present() {
       )}
 
       {/* SPEECH BUBBLE + TEXT */}
-      {speechBubble && (
+      {showGoose && speechBubble && (
         <div
           style={{
             position: "fixed",
@@ -514,7 +543,7 @@ export default function Present() {
       )}
 
       {/* GOOSE */}
-      {toneImage && (
+      {showGoose && toneImage && (
         <img
           src={toneImage}
           alt="tone indicator"
