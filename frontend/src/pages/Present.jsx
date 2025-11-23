@@ -208,6 +208,7 @@ export default function Present() {
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
+      videoRef.current.srcObject = null;   
       streamRef.current = null;
     }
 
