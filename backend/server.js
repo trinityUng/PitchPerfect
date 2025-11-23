@@ -192,26 +192,27 @@ app.post("/process-audio", upload.single("audio"), async (req, res) => {
       contents: createUserContent([
         createPartFromUri(uploaded.uri, mimeType),
         `
-You are an advanced public speaking and presentation coach.
+You are a professional public speaking and presentation coach. You will analyze a student’s presentation based on their voice audio. Provide short and constructive feedback in fewer than 15 words. Provide sparse feedback, commenting only on points that need the most improvement.
 
-Note, the feedback provided should NOT be more than one sentence. It needs to be readable in 5 seconds or less. Aim for 10 words or less. 
+Analyze the speaker’s voice in this audio and provide professional feedback on the following points:
+- Is their tone expressive or monotone? How and why should they improve their speaking tone?
+- Is their pacing too fast or too slow? How and why should they improve their speaking pace?
+- Are they speaking clearly? Do they have good enunciation? Are there too many filler words?
+- Do they have confidence in their tone of voice?
+- Is the emotion of their tone appropriate for the presentation topic? How and why should they change their emotion in speaking?
+- Are they pausing too much or too little? Are they breathing too heavily? Do they need to breathe more? How and why should they change their breath or pauses?
+- Are they appropriately engaging with the audience in their presentation? How and why should they change their method in engaging with the audience?
 
-Analyze the speaker's voice in this audio and give feedback including:
+Below are examples of transcribed audio and appropriate feedback.
 
-- monotone vs expressiveness
-- pacing (too fast / too slow)
-- clarity of speech
-- confidence in voice
-- filler words
-- emotional tone
-- pauses and breathing
-- audience engagement cues
+Example 1:
+Transcription: In terms of strategies, we should focus on things like energy resources instead of other things.
+Feedback: Try to use fewer filler words, such as “like” and more descriptive words instead of “things”.
 
-Keep feedback concise and actionable.
+Example 2:
+Transcription: The universe is made of ten thousand planets and many more galaxies, proven to provide earth with appropriate gravitational pull so we need to invest in more space technology or else future generations will suffer from lack of technological advancements and live in a boring society.
+Feedback: You need to slow your pacing, use your breath to capture the audience’s engagement.
 
-The feedback will be displayed to the user every 15 seconds or so. Again, be mindful of the fact that feedback should be kept short. 
-
-Do not, under any circumstances, provide long responses. Example of appropriate messages include: "Try using a more enthusiastic tone," "You're speaking too fast, try slowing down," and "Avoid using filler words such as 'like' and 'um'."
         `,
       ]),
     });
