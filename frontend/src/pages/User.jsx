@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 
 const User = () => {
-  const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "User";
 
   return (
     <Layout>
@@ -33,7 +33,7 @@ const User = () => {
             fontSize: "clamp(1.2rem, 4vw, 1.6rem)",
           }}
         >
-          User
+          {username || "User"}
         </h1>
 
         <label
@@ -62,69 +62,7 @@ const User = () => {
             alignItems: "center",
           }}
         >
-          <label
-            style={{
-              fontFamily: "Jua-Regular",
-              color: "#1E406E",
-              fontSize: "clamp(0.9rem, 3vw, 1.1rem)",
-            }}
-          >
-            Leaderboard
-          </label>
           
-          <div
-            style={{
-              width: "100%",
-              padding: "1.5vh 1.5vw",
-              background: "#1E406E",
-              color: "white",
-              borderRadius: "10px",
-              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
-              fontFamily: "Jua-Regular",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>1 - Jocelyn Chang</span>
-            <span>8999</span>
-          
-          </div>
-          <div
-            style={{
-              width: "100%",
-              padding: "1.5vh 1.5vw",
-              background: "#1E406E",
-              color: "white",
-              borderRadius: "10px",
-              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
-              fontFamily: "Jua-Regular",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>2 - Jocelyn</span>
-            <span>891</span>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              padding: "1.5vh 1.5vw",
-              background: "#1E406E",
-              color: "white",
-              borderRadius: "10px",
-              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
-              fontFamily: "Jua-Regular",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "3vh",
-            }}
-          >
-            <span>3 - Joc</span>
-            <span>601</span>
-          </div>
 
         </div>
       </div>

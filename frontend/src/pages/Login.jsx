@@ -50,6 +50,7 @@ const Login = () => {
 
     // ⭐⭐⭐ STORE USER ID **HERE**
     localStorage.setItem("userId", data.userId);
+    localStorage.setItem("username", data.username);
 
     alert("Login successful!");
     navigate("/present");
