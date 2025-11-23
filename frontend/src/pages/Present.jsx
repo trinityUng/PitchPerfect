@@ -58,8 +58,10 @@ export default function Present() {
   };
 
   /* START RECORDING */
-  const startRecording = () => {
-    if (!streamRef.current) return;
+  const startRecording = async () => {
+    if (!streamRef.current) {
+      await startCamera();
+    }
 
     enterFullscreen();
     recordingFlagRef.current = true;
