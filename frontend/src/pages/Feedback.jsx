@@ -1,10 +1,39 @@
 import Layout from "./Layout.jsx";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Feedback() {
   const navigate = useNavigate();
 
+  const [latestVideo, setLatestVideo] = useState(null);
+
+    useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    fetch(`http://localhost:5050/user-videos/${userId}`)
+        .then(res => res.json())
+        .then(data => {
+        if (data.videos && data.videos.length > 0) {
+            setLatestVideo(data.videos[0]); // newest video (sorted in backend)
+        }
+        })
+        .catch(err => console.error(err));
+    }, []);
+
+
+  const downloadLatestVideo = () => {
+    if (!latestVideo) return;
+
+    const filename = latestVideo.filePath.split("/").pop();
+    const downloadURL = `http://localhost:5050/download/${filename}`;
+
+    const a = document.createElement("a");
+    a.href = downloadURL;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   // to create pdf
   const downloadPDF = async () => {
     try {
@@ -106,7 +135,7 @@ export default function Feedback() {
                 width: "70px",
                 cursor: "pointer",
                 marginRight: "40px",
-              }}
+            }}
             />
           </div>
         </div>

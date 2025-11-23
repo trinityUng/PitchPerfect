@@ -1,6 +1,8 @@
 import express from "express";
 import multer from "multer";
 import Video from "../models/Video.js";
+import path from "path";
+import fs from "fs";
 
 const router = express.Router();
 
@@ -12,6 +14,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// UPLOAD ROUTE
 router.post("/upload-full-video", upload.single("video"), async (req, res) => {
   try {
     const userId = req.body.userId;
@@ -41,6 +44,19 @@ router.get("/user-videos/:userId", async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Could not fetch videos" });
   }
+});
+
+// ✅ FORCE DOWNLOAD (NEW ROUTE)
+router.get("/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+
+  const filePath = path.join(process.cwd(), "uploads", filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send("File not found");
+  }
+
+  res.download(filePath);
 });
 
 export default router;
