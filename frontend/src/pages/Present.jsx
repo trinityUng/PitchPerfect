@@ -22,6 +22,10 @@ export default function Present() {
   const [fullAudioURL, setFullAudioURL] = useState(null);
   const [fullVideoURL, setFullVideoURL] = useState(null);
 
+  const [toneImage, setToneImage] = useState(null); // state for goose
+  const [speechBubble, setSpeechBubble] = useState(null); // for speech bubble
+  const [speechText, setSpeechText] = useState(""); // for speech bubble (text)
+
   /* ENTER FULLSCREEN */
   const enterFullscreen = () => {
     if (containerRef.current.requestFullscreen) {
@@ -112,7 +116,7 @@ export default function Present() {
 
       if (recordingFlagRef.current) {
         loopAudioRecorder.start();
-        setTimeout(() => loopAudioRecorder.stop(), 20000);
+        setTimeout(() => loopAudioRecorder.stop(), 10000);
       }
     };
 
@@ -136,7 +140,7 @@ export default function Present() {
 
       const feedback = await sendVideoChunk(blob);
 
-      console.log("FEEDBACK RECEIVED:", feedback);
+      //console.log("FEEDBACK RECEIVED:", feedback);
 
       if (recordingFlagRef.current) {
         loopVideoRecorder.start();
@@ -164,22 +168,37 @@ export default function Present() {
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
     form.append("audio", blob);
-    await fetch("http://localhost:5000/process-audio", {
+    const analysis = await fetch("http://localhost:5050/process-audio", {
       method: "POST",
       body: form,
+    }).then((res) => res.json());
+
+    console.log("audio feedback received: ", analysis.feedback);
+
+    // determine if feedback is 'Appreciative', 'Evaluative', or 'Actionable'
+    const feedbackToneResponse = await fetch("http://localhost:5050/get-tone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: analysis.feedback }),
     });
+
+    const tone = await feedbackToneResponse.json();
+    console.log("Tone identified:", tone.result);
+
+    // prompt goose image
+    showToneTemporarily(tone.result, analysis.feedback);
   };
 
   const sendVideoChunk = async (blob) => {
     const form = new FormData();
     form.append("video", blob);
 
-    const analysis = await fetch("http://localhost:5000/process-video", {
+    const analysis = await fetch("http://localhost:5050/process-video", {
       method: "POST",
       body: form,
     }).then((res) => res.json());
 
-    console.log("received from server: ", analysis); // for debugging
+    console.log("raw data response: ", analysis.rawResults);
 
     // sanity check to make sure we received feedback
     if (!analysis) {
@@ -188,7 +207,7 @@ export default function Present() {
     }
 
     const feedbackResponse = await fetch(
-      "http://localhost:5000/video-feedback",
+      "http://localhost:5050/video-feedback",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -199,21 +218,51 @@ export default function Present() {
     const feedbackData = await feedbackResponse.json();
 
     const feedback = feedbackData.feedback;
-    //console.log("Feedback from server:", feedback);
+    console.log("video feedback received: ", feedback);
 
     return feedback;
+
+    // when feedback is received, use it to pick one of three gooses, then provide feedback in speech bubble
   };
 
   const triggerVideoDownload = () => {
-  if (!fullVideoURL) return;
+    if (!fullVideoURL) return;
 
-  const a = document.createElement("a");
-  a.href = fullVideoURL;
-  a.download = "full-video.webm";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-};
+    const a = document.createElement("a");
+    a.href = fullVideoURL;
+    a.download = "full-video.webm";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  // function to display goose
+  const showToneTemporarily = (tone, rawFeedbackText) => {
+    const map = {
+      Appreciative: "/images/Appreciative.png",
+      Evaluative: "/images/Evaluative.png",
+      Actionable: "/images/Actionable.png",
+    };
+
+    const img = map[tone];
+
+    if (!img) {
+      console.error("Unknown tone:", tone);
+      return;
+    }
+
+    setToneImage(img); // display goose
+
+    setSpeechBubble("/images/speech.png"); // display speech bubble
+    setSpeechText(rawFeedbackText); // set speech bubble text
+
+    // Hide after 10 seconds
+    setTimeout(() => {
+      setToneImage(null);
+      setSpeechBubble(null);
+      setSpeechText("");
+    }, 8000);
+  };
 
   useEffect(() => {
     startCamera();
@@ -221,8 +270,10 @@ export default function Present() {
 
   return (
     // <Layout>
-    <div ref={containerRef} style={{ position: "relative", minHeight: "100vh" }}>
-      
+    <div
+      ref={containerRef}
+      style={{ position: "relative", minHeight: "100vh" }}
+    >
       {/* FLOATING BUTTON (ALWAYS SHOWN EVEN IN FULLSCREEN) */}
       <div
         style={{
@@ -250,8 +301,7 @@ export default function Present() {
 
       {!isFullscreenMode && (
         <>
-        <Layout>
-        </Layout>
+          <Layout></Layout>
         </>
       )}
 
@@ -266,7 +316,9 @@ export default function Present() {
           height: isFullscreenMode ? "100vh" : "auto",
           objectFit: isFullscreenMode ? "cover" : "contain",
           borderRadius: isFullscreenMode ? "0px" : "20px",
-          transform: isFullscreenMode ? "scaleX(-1)" : "translate(-50%, -50%) scaleX(-1)",
+          transform: isFullscreenMode
+            ? "scaleX(-1)"
+            : "translate(-50%, -50%) scaleX(-1)",
           background: "black",
           position: isFullscreenMode ? "relative" : "absolute",
           top: isFullscreenMode ? "0" : "42%",
@@ -274,7 +326,6 @@ export default function Present() {
           display: "block",
         }}
       />
-
 
       {/* DOWNLOAD LINKS (always clickable) */}
       {(fullAudioURL || fullVideoURL) && (
@@ -291,7 +342,6 @@ export default function Present() {
             textAlign: "center",
           }}
         >
-
           {/* COMMENTED OUT PER REQUEST */}
           {false && fullAudioURL && (
             <a
@@ -301,14 +351,73 @@ export default function Present() {
                 marginRight: "20px",
                 cursor: "pointer",
                 fontWeight: "600",
-                color: "black"
+                color: "black",
               }}
             >
               ⬇ Download Full Audio
             </a>
           )}
-
         </div>
+      )}
+
+      {/* SPEECH BUBBLE + TEXT */}
+      {speechBubble && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "290px",
+            left: "350px", // change to shift right
+            width: "1000px",
+            zIndex: 999999999,
+          }}
+        >
+          <img
+            src={speechBubble}
+            alt="speech bubble"
+            style={{
+              width: "100%",
+              height: "auto",
+            }}
+          />
+
+          {/* TEXT */}
+          <div
+            style={{
+              position: "absolute",
+              top: "26%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "85%",
+              fontSize: "2.2rem",
+              fontWeight: "600",
+              color: "black",
+              lineHeight: "2.6rem",
+              textAlign: "center",
+              wordWrap: "break-word",
+            }}
+          >
+            {speechText}
+          </div>
+        </div>
+      )}
+
+      {/* GOOSE */}
+      {toneImage && (
+        <img
+          src={toneImage}
+          alt="tone indicator"
+          style={{
+            position: "fixed",
+            bottom: "0px",
+            left: "-80px", // moving goose toward left edge
+            width: "600px",
+            height: "600px",
+            objectFit: "contain",
+            zIndex: 99999999,
+            pointerevents: "none",
+            filter: "drop-shadow(0 0 10px rgba(0,0,0,0.5))",
+          }}
+        />
       )}
     </div>
     // </Layout>
