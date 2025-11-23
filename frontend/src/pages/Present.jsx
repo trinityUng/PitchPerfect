@@ -67,7 +67,7 @@ export default function Present() {
     recordingFlagRef.current = true;
     setIsRecordingState(true);
 
-    // load initial goose 
+    // load initial goose
     const welcomeGoose = "/images/Appreciative.png";
     const welcomeBubble = "/images/speech.png";
     const welcomeText =
@@ -82,7 +82,7 @@ export default function Present() {
       setSpeechBubble(null);
       setSpeechText("");
     }, 8000);
-    
+
     const stream = streamRef.current;
     const audioTrack = stream.getAudioTracks()[0];
     const videoTrack = stream.getVideoTracks()[0];
@@ -176,30 +176,27 @@ export default function Present() {
   };
 
   /* STOP RECORDING */
-      const stopRecording = async () => {
-      recordingFlagRef.current = false;
-      setIsRecordingState(false);
+  const stopRecording = async () => {
+    recordingFlagRef.current = false;
+    setIsRecordingState(false);
 
-      exitFullscreen();
+    // toggle off images
+    setToneImage(null);
+    setSpeechBubble(null);
+    setSpeechText("");
 
-      fullVideoRecorderRef.current?.stop();
-      fullAudioRecorderRef.current?.stop();
-      loopAudioRecorderRef.current?.stop();
-      loopVideoRecorderRef.current?.stop();
+    exitFullscreen();
 
-      // STEP — turn off camera completely
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-      }
-      
-      // wait a bit for uploadFullVideo() to run
-      setTimeout(() => {
-        navigate("/feedback");
-      }, 500);
-    };
+    fullVideoRecorderRef.current?.stop();
+    fullAudioRecorderRef.current?.stop();
+    loopAudioRecorderRef.current?.stop();
+    loopVideoRecorderRef.current?.stop();
 
-
+    // wait a bit for uploadFullVideo() to run
+    setTimeout(() => {
+      navigate("/feedback");
+    }, 500);
+  };
 
   const sendAudioChunk = async (blob) => {
     const form = new FormData();
@@ -301,25 +298,29 @@ export default function Present() {
   };
 
   const uploadFullVideo = async (blob) => {
-  const userId = localStorage.getItem("userId"); 
-  // make sure you save userId in localStorage during login
+    const userId = localStorage.getItem("userId");
+    // make sure you save userId in localStorage during login
 
-  const form = new FormData();
-  form.append("video", blob, "recording.webm");
-  form.append("userId", userId);
+    const form = new FormData();
+    form.append("video", blob, "recording.webm");
+    form.append("userId", userId);
 
-  try {
-    const res = await fetch("http://localhost:5050/upload-full-video", {
-      method: "POST",
-      body: form,
-    });
+    try {
+      const res = await fetch("http://localhost:5050/upload-full-video", {
+        method: "POST",
+        body: form,
+      });
 
-    const data = await res.json();
-    console.log("UPLOAD RESULT:", data);
-  } catch (err) {
-    console.error("Failed to upload full video:", err);
-  }
-};
+      const data = await res.json();
+      console.log("UPLOAD RESULT:", data);
+    } catch (err) {
+      console.error("Failed to upload full video:", err);
+    }
+  };
+
+  useEffect(() => {
+    startCamera();
+  }, []);
 
   return (
     // <Layout>
