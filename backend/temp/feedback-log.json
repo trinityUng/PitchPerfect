@@ -1,10 +1,5 @@
 [
   {
-    "type": "video",
-    "text": "- \"Incorporate more smiles to increase engagement.\"\n- \"Add more expression to connect better with your audience.\"",
-    "timestamp": "2025-11-23T04:44:34.259Z"
-  },
-  {
     "type": "audio",
     "text": "Control your pacing for a more confident and engaging delivery.",
     "timestamp": "2025-11-23T04:44:40.208Z"
@@ -433,5 +428,7 @@
     "type": "audio",
     "text": "Begin confidently; minimize preparatory vocalizations and heavy breaths.",
     "timestamp": "2025-11-23T06:45:10.666Z"
+    "text": "Minimize filler words like \"um\" and \"like\" for a more confident delivery.",
+    "timestamp": "2025-11-23T06:25:27.865Z"
   }
 ]

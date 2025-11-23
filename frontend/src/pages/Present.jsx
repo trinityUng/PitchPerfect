@@ -27,6 +27,10 @@ export default function Present() {
   const [speechBubble, setSpeechBubble] = useState(null); // for speech bubble
   const [speechText, setSpeechText] = useState(""); // for speech bubble (text)
 
+  // states used for queue structure
+  const feedbackQueueRef = useRef([]); // stores queued feedback items
+  const dispatcherRunningRef = useRef(false); // prevents multiple timers
+
   // add to get rid of goose
   const [hideGooseButton, setHideGooseButton] = useState(false);
 
@@ -63,9 +67,9 @@ export default function Present() {
 
   /* START RECORDING */
   const startRecording = async () => {
-    if (!streamRef.current){
+    if (!streamRef.current) {
       await startCamera();
-    };
+    }
 
     enterFullscreen();
     recordingFlagRef.current = true;
@@ -205,7 +209,7 @@ export default function Present() {
     loopAudioRecorderRef.current?.stop();
     loopVideoRecorderRef.current?.stop();
 
-    if(streamRef.current){
+    if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
@@ -234,10 +238,13 @@ export default function Present() {
     });
 
     const tone = await feedbackToneResponse.json();
-    console.log("Tone identified:", tone.result);
+    console.log("Tone identified (audio):", tone.result);
 
     // prompt goose image
-    showToneTemporarily(tone.result, analysis.feedback);
+    // showToneTemporarily(tone.result, analysis.feedback);
+
+    // add feedback and tone to queue
+    enqueueFeedback(tone.result, analysis.feedback);
   };
 
   const sendVideoChunk = async (blob) => {
@@ -271,9 +278,23 @@ export default function Present() {
     const feedback = feedbackData.feedback;
     console.log("video feedback received: ", feedback);
 
-    return feedback;
+    //return feedback;
 
     // when feedback is received, use it to pick one of three gooses, then provide feedback in speech bubble
+    const feedbackToneResponse = await fetch("http://localhost:5050/get-tone", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: feedbackData.feedback }),
+    });
+
+    const tone = await feedbackToneResponse.json();
+    console.log("Tone identified (video):", tone.result);
+
+    // prompt goose image
+    //showToneTemporarily(tone.result, feedbackData.feedback);
+
+    // add feedback and tone to queue
+    enqueueFeedback(tone.result, feedbackData.feedback);
   };
 
   const triggerVideoDownload = () => {
@@ -313,6 +334,42 @@ export default function Present() {
       setSpeechBubble(null);
       setSpeechText("");
     }, 8000);
+  };
+
+  // --- ADD FEEDBACK TO QUEUE ---
+  const enqueueFeedback = (tone, text) => {
+    feedbackQueueRef.current.push({ tone, text });
+    console.log("current queue: ", feedbackQueueRef);
+    startDispatcher();
+  };
+
+  // --- DISPATCH QUEUE ENTRIES AT FIXED INTERVALS ---
+  const startDispatcher = () => {
+    if (dispatcherRunningRef.current) return; // already running
+    dispatcherRunningRef.current = true;
+
+    const dispatchNext = () => {
+      // No more items -> stop dispatcher
+      if (feedbackQueueRef.current.length === 0) {
+        dispatcherRunningRef.current = false;
+        return;
+      }
+
+      // Get next feedback
+      const next = feedbackQueueRef.current.shift();
+      console.log(
+        "next tone to display: ",
+        next.tone,
+        " next feedback to display: ",
+        next.text
+      );
+      showToneTemporarily(next.tone, next.text);
+
+      // Schedule next message in 10 seconds
+      setTimeout(dispatchNext, 10000);
+    };
+
+    dispatchNext(); // start immediately
   };
 
   const uploadFullVideo = async (blob) => {
