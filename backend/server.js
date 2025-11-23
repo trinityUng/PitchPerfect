@@ -23,6 +23,12 @@ import path from "path";
 import * as faceapi from "face-api.js";
 import { Canvas, Image, ImageData, loadImage } from "canvas";
 
+// for video uploads
+import uploadFullVideoRoutes from "./routes/uploadFullVideo.js";
+import Video from "./models/Video.js";
+
+
+
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
@@ -57,6 +63,14 @@ const ai = new GoogleGenAI({
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/", uploadFullVideoRoutes);
+
+// Correct static path
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // register
 app.post("/register", async (req, res) => {
@@ -64,7 +78,9 @@ app.post("/register", async (req, res) => {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
-      return res.status(400).json({ error: "Missing username, email, or password" });
+      return res
+        .status(400)
+        .json({ error: "Missing username, email, or password" });
     }
 
     const existing = await User.findOne({ username });
@@ -98,7 +114,7 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Incorrect password." });
     }
 
-    res.json({ message: "Login successful" });
+    res.json({ message: "Login successful", userId: user._id });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
@@ -178,7 +194,9 @@ app.post("/process-audio", upload.single("audio"), async (req, res) => {
         `
 You are an advanced public speaking and presentation coach.
 
-Analyze the speaker's voice in this audio and give **live-presentation feedback** including:
+Note, the feedback provided should NOT be more than one sentence. It needs to be readable in 5 seconds or less. Aim for 10 words or less. 
+
+Analyze the speaker's voice in this audio and give feedback including:
 
 - monotone vs expressiveness
 - pacing (too fast / too slow)
@@ -191,7 +209,9 @@ Analyze the speaker's voice in this audio and give **live-presentation feedback*
 
 Keep feedback concise and actionable.
 
-The feedback will be displayed to the user every 30 seconds or so. Because of this, feedback should be 1-2 sentences in length, no longer than that.
+The feedback will be displayed to the user every 15 seconds or so. Again, be mindful of the fact that feedback should be kept short. 
+
+Do not, under any circumstances, provide long responses. Example of appropriate messages include: "Try using a more enthusiastic tone," "You're speaking too fast, try slowing down," and "Avoid using filler words such as 'like' and 'um'."
         `,
       ]),
     });
@@ -331,7 +351,7 @@ ${JSON.stringify(averages, null, 2)}
 
 Rules:
 - Output 1–2 short feedback cues.
-- Maximum 15 words each.
+- Maximum 10 words each (should not be too long, the feedback will be displayed on screen, and should be quick to read).
 - No emojis.
 - Be direct.
 - Be clear in stating the presenter's current expression, and how this can be improved (e.g., "Your current expression is grumpy. Smile more to engage the audience.").
@@ -360,6 +380,53 @@ Now produce the cues:
   } catch (err) {
     console.error("Error in /video-feedback:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.post("/get-tone", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    //console.log("request received: ", prompt);
+
+    const fprompt =
+      "Classify the following feedback as one of the following: 'Appreciative', 'Evaluative', or 'Actionable' (in this exact format). Provide a one word answer, the answer should not be a sentence, or more than any one of these words alone. Note, appreciative feedback focuses on reinforcing behavior that was successful, evaluative feedback focuses on identifying areas where performance failed to meet a standard or expectation, and actionable feedback focuses on providing specific, actionable advice to close the gap identified by critical evaluative feedback. Here is the feedback for evaluation: " +
+      prompt;
+
+    // add safety check to make sure prompt is in string format
+    if (!prompt) {
+      return res.status(400).json({ error: "incorrect prompt format" });
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          parts: [
+            {
+              text: fprompt,
+            },
+          ],
+        },
+      ],
+    });
+
+    const text_response = response.candidates[0].content.parts[0].text;
+    console.log("prompt tone: ", text_response);
+
+    res.json({ result: text_response });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+// Get all videos for a user
+app.get("/user-videos/:userId", async (req, res) => {
+  try {
+    const videos = await Video.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 });
+
+    res.json({ videos });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not fetch videos" });
   }
 });
 

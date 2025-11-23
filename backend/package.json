@@ -16,6 +16,7 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@google/genai": "^1.30.0",
     "@google/generative-ai": "^0.24.1",
+    "@openrouter/sdk": "^0.1.27",
     "bcrypt": "^6.0.0",
     "canvas": "^3.2.0",
     "cors": "^2.8.5",
